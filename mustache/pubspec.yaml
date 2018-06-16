@@ -1,0 +1,13 @@
+name: tekartik_mustache
+version: 0.1.0
+description: Get the global platform context
+environment:
+  sdk: '>=1.24.3 <2.0.0'
+
+dependencies:
+  html: any
+  tekartik_common_utils:
+    git: git://github.com/tekartik/common_utils.dart
+
+dev_dependencies:
+  test: any
