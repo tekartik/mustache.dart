@@ -49,6 +49,12 @@ main() {
             ..nodes.add(new SectionNode(new VariableNode(10, 12)))
         ]);
       });
+
+      test('partial_node', () {
+        expect(parse("{{>c}}"), [new PartialNode(3, 4)]);
+        expect(parse("{{>c"), [new PartialNode(3, 4)]);
+        expect(parse("{{>"), []);
+      });
     });
 
     group('variable', () {

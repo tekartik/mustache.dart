@@ -112,6 +112,13 @@ class Parser extends Object with SourceMixin {
               addNode(new NoEscapeVariableNode(start, end));
             }
             break;
+          case '>':
+            ++start;
+            if (_trim()) {
+              addNode(new PartialNode(start, end));
+            }
+            break;
+
           default:
             if (_trim()) {
               addNode(new VariableNode(start, end));
@@ -311,6 +318,23 @@ class SectionStartNode extends ParserNode {
 
 class SectionEndNode extends ParserNode {
   SectionEndNode(int start, int end) : super(start, end);
+}
+
+class PartialNode extends ParserNode {
+  PartialNode(int start, int end) : super(start, end);
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is PartialNode && super == (other);
+  }
+
+  @override
+  String toString() {
+    return "Partial ${super.toString()}";
+  }
 }
 
 List<ParserNode> parse(String text) {

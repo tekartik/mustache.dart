@@ -153,4 +153,29 @@ main() {
           "value");
     });
   });
+
+  group('partial', () {
+    test('simple_partial', () async {
+      expect(await render('{{>partial}}', null, partial: (String _) => "value"),
+          "value");
+    });
+    test('partial_var', () async {
+      expect(
+          await render('{{>partial}}', {"var": "value"},
+              partial: (String _) => "{{var}}"),
+          "value");
+    });
+    test('sub_partial_var', () async {
+      expect(
+          await render('{{>p1}}', {"var": "value"}, partial: (String partial) {
+            switch (partial) {
+              case 'p1':
+                return '{{>p2}}';
+              case 'p2':
+                return "{{var}}";
+            }
+          }),
+          "value");
+    });
+  });
 }

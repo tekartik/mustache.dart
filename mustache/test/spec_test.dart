@@ -51,15 +51,15 @@ _defineGroupFromFile(filename, String text) {
       var reason =
           new StringBuffer("Could not render right '''$templateOneline'''");
       var expected = t['expected'];
-      /*
-      var partials = t['partials'];
+
+      var partials = t['partials'] as Map;
       var partial = (String name) {
         if (partials == null) {
           return null;
         }
-        return partials[name];
+        return partials[name] as String;
       };
-      */
+
       /*
       //swap the data.lambda with a dart real function
       if (data['lambda'] != null) {
@@ -67,18 +67,13 @@ _defineGroupFromFile(filename, String text) {
       }
       */
       reason.write(" with '$data'");
-      /*
+
       if (partials != null) {
         reason.write(" and partial: $partials");
       }
-      */
+
       test(testDescription.toString(), () async {
-        expect(
-            await render(
-              template, data,
-              //    partial: partial
-            ),
-            expected,
+        expect(await render(template, data, partial: partial), expected,
             reason: reason.toString());
       });
     });

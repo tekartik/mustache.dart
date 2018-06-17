@@ -12,6 +12,26 @@ String textAtNode(String source, Node node) {
   return source.substring(node.start, node.end);
 }
 
+class SourceVariable extends SourceNode<VariableNode> {
+  SourceVariable(String source, VariableNode node) : super(source, node);
+
+  String get name => getVariableName(node);
+}
+
+class SourceNode<T extends ParserNode> extends Object with SourceMixin {
+  @override
+  final String source;
+  final T node;
+
+  SourceNode(this.source, this.node);
+}
+
+class SourceText extends SourceNode<TextNode> {
+  SourceText(String source, TextNode node) : super(source, node);
+
+  String get text => getText(node);
+}
+
 class Renderer extends Object with SourceMixin {
   final String source;
   Map<String, dynamic> values;
@@ -22,10 +42,11 @@ class Renderer extends Object with SourceMixin {
   var sb = new StringBuffer();
 
   // no end line
-  TextNode pendingWhiteSpaceNode;
-  ParserNode previousNode;
+  SourceText pendingWhiteSpaceNode;
+
   bool hasContentOnCurrentLine = false;
   bool hasTemplateOnCurrentLine = false;
+  PartialResolver partialResolver;
 
   /*
   _writeNode(ParserNode node, String text) {
@@ -46,14 +67,15 @@ class Renderer extends Object with SourceMixin {
 
   _writeText(String text) {
     if (pendingWhiteSpaceNode != null) {
-      _doWriteText(getText(pendingWhiteSpaceNode));
+      _doWriteText(pendingWhiteSpaceNode.text);
       pendingWhiteSpaceNode = null;
     }
     _doWriteText(text);
   }
 
-  dynamic getVariableValue(VariableNode node, {bool recursive: true}) {
-    var key = getVariableName(node);
+  dynamic getVariableValue(SourceVariable variable, {bool recursive: true}) {
+    var node = variable.node;
+    var key = variable.name;
 
     T _fixValue<T>(T value) {
       if (value is String) {
@@ -87,7 +109,7 @@ class Renderer extends Object with SourceMixin {
     }
 
     if (recursive) {
-      return parent?.getVariableValue(node, recursive: recursive);
+      return parent?.getVariableValue(variable, recursive: recursive);
     }
 
     return null;
@@ -149,50 +171,48 @@ class Renderer extends Object with SourceMixin {
   _renderBasicNode(ParserNode node) {
     //var previousNode = this.previousNode;
     // this.previousNode = node;
-    try {
-      var text = getText(node);
-      if (node is TextNode) {
-        bool whitespacesOnly = isWhitespaces(text);
-        if (!text.endsWith(nl) && whitespacesOnly) {
-          // Write existing pending one first
-          if (pendingWhiteSpaceNode != null) {
-            _writeText("");
-          }
-          pendingWhiteSpaceNode = node;
-        } else {
-          // We we know that we have either content or ending with a lf
-          // line feed only?
-          if (isLineFeed(text)) {
-            if (!hasContentOnCurrentLine) {
-              // nope and discard
-              pendingWhiteSpaceNode = null;
-              hasTemplateOnCurrentLine = false;
-              return;
-            }
-          }
 
-          _writeText(text);
+    var text = getText(node);
+    if (node is TextNode) {
+      bool whitespacesOnly = isWhitespaces(text);
+      if (!text.endsWith(nl) && whitespacesOnly) {
+        // Write existing pending one first
+        if (pendingWhiteSpaceNode != null) {
+          _writeText("");
         }
-      } else if (node is VariableNode) {
-        var value = getVariableValue(node);
-        if (value != null) {
-          _writeText(value.toString());
-        }
-      } else if (node is CommentNode) {
-        if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
-          //ok ignore
-          pendingWhiteSpaceNode = null;
-        }
+        pendingWhiteSpaceNode = new SourceText(source, node);
       } else {
-        throw new UnimplementedError("_renderBasicNode $node");
+        // We we know that we have either content or ending with a lf
+        // line feed only?
+        if (isLineFeed(text)) {
+          if (!hasContentOnCurrentLine) {
+            // nope and discard
+            pendingWhiteSpaceNode = null;
+            hasTemplateOnCurrentLine = false;
+            return;
+          }
+        }
+
+        _writeText(text);
       }
-    } finally {
-      previousNode = node;
+    } else if (node is VariableNode) {
+      var value = getVariableValue(new SourceVariable(source, node));
+      if (value != null) {
+        _writeText(value.toString());
+      }
+    } else if (node is CommentNode) {
+      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
+        //ok ignore
+        pendingWhiteSpaceNode = null;
+      }
+    } else {
+      throw new UnimplementedError("_renderBasicNode $node");
     }
   }
 
-  Renderer nestedRenderer() {
-    var renderer = new Renderer(source)
+  Renderer nestedRenderer(String source) {
+    var renderer = new Renderer(source ?? this.source)
+      ..partialResolver = partialResolver
       ..hasTemplateOnCurrentLine = true
       ..pendingWhiteSpaceNode = pendingWhiteSpaceNode
       ..hasContentOnCurrentLine = hasContentOnCurrentLine
@@ -206,10 +226,10 @@ class Renderer extends Object with SourceMixin {
     hasTemplateOnCurrentLine = renderer.hasTemplateOnCurrentLine;
   }
 
-  Future renderChildNodes(
-      List<ParserNode> nodes, Map<String, dynamic> values) async {
+  Future renderChildNodes(List<ParserNode> nodes, Map<String, dynamic> values,
+      {String source}) async {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
-    var renderer = nestedRenderer()..values = values;
+    var renderer = nestedRenderer(source)..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
     pendingWhiteSpaceNode = null;
@@ -221,14 +241,31 @@ class Renderer extends Object with SourceMixin {
   }
 
   Future<String> renderNodes(List<ParserNode> nodes) async {
+    await _renderNodes(nodes);
+    // Do we need to add the pending white space
+    if (pendingWhiteSpaceNode != null) {
+      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
+        // do not write
+      } else {
+        var text = pendingWhiteSpaceNode.text;
+        pendingWhiteSpaceNode = null;
+        _writeText(text);
+      }
+      //}
+    }
+
+    return sb.toString();
+  }
+
+  Future _renderNodes(List<ParserNode> nodes) async {
     for (var node in nodes) {
       if (!hasTemplateOnCurrentLine) {
-        hasTemplateOnCurrentLine =
-            (!(node is TextNode)) && (!(node is CommentNode));
+        hasTemplateOnCurrentLine = (!(node is TextNode)) &&
+            (!(node is CommentNode) && (!(node is PartialNode)));
       }
 
       if (node is SectionNode) {
-        var value = getVariableValue(node.variable);
+        var value = getVariableValue(new SourceVariable(source, node.variable));
         if (node.inverted == true) {
           if ((value == null || value == false) ||
               (value is List && value.isEmpty)) {
@@ -255,24 +292,16 @@ class Renderer extends Object with SourceMixin {
             throw new UnsupportedError("value $value $node");
           }
         }
+      } else if (node is PartialNode) {
+        String template = await partialResolver(getText(node));
+        if (template != null) {
+          var nodes = parse(template);
+          await renderChildNodes(nodes, {}, source: template);
+        }
       } else {
         _renderBasicNode(node);
       }
     }
-
-    // Do we need to add the pending white space
-    if (pendingWhiteSpaceNode != null) {
-      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
-        // do not write
-      } else {
-        var text = getText(pendingWhiteSpaceNode);
-        pendingWhiteSpaceNode = null;
-        _writeText(text);
-      }
-      //}
-    }
-
-    return sb.toString();
   }
 
   Future<String> render() async {
@@ -282,10 +311,16 @@ class Renderer extends Object with SourceMixin {
   }
 }
 
-Future<String> render(String source, Map<String, dynamic> values) async {
+/// The main entry point
+Future<String> render(String source, Map<String, dynamic> values,
+    {PartialResolver partial}) async {
   if (source == null) {
     return null;
   }
-  var renderer = new Renderer(source)..values = values;
+  var renderer = new Renderer(source)
+    ..values = values
+    ..partialResolver = partial;
   return await renderer.render();
 }
+
+typedef FutureOr<String> PartialResolver(String name);
