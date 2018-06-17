@@ -29,6 +29,9 @@ main() {
     test('lines', () async {
       expect(await render(" {{!comment}}\n", null), "");
     });
+    test('no_single_on_line', () async {
+      expect(await render("a{{!comment}}\n", null), "a\n");
+    });
   });
   group('variable', () {
     test('escape', () async {
@@ -58,6 +61,11 @@ main() {
     test('true', () async {
       expect(await render('{{#s}}value{{/s}}', {'s': true}), "value");
     });
+    test('spaces', () async {
+      expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
+      expect(await render('{{#s}}\n{{/s}}', {'s': true}), "\n");
+      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n ");
+    });
     test('inverted_valse', () async {
       expect(await render('{{^s}}value{{/s}}', {'s': false}), "value");
     });
@@ -77,6 +85,22 @@ main() {
             ]
           }),
           "value1value2");
+    });
+    test('nested_map', () async {
+      expect(
+          await render('{{#s1}}{{#s2}}{{var}}{{/s2}}{{/s1}}', {
+            's1': {'var': 'value'},
+            's2': {}
+          }),
+          "value");
+    });
+    test('context_precendence', () async {
+      expect(
+          await render('{{#a}}{{b.c}}{{/a}}', {
+            'a': {'b': {}},
+            'b': {'c': 'ERROR'}
+          }),
+          "");
     });
   });
 }

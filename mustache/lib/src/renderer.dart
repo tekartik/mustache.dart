@@ -24,6 +24,7 @@ class Renderer extends Object with SourceMixin {
   // no end line
   TextNode pendingWhiteSpaceNode;
   ParserNode previousNode;
+  bool hasContentOnCurrentLine = false;
 
   /*
   _writeNode(ParserNode node, String text) {
@@ -33,6 +34,8 @@ class Renderer extends Object with SourceMixin {
   */
 
   _writeText(String text) {
+    hasContentOnCurrentLine = !text.endsWith(nl);
+
     if (pendingWhiteSpaceNode != null) {
       sb.write(getText(pendingWhiteSpaceNode));
       pendingWhiteSpaceNode = null;
@@ -40,8 +43,8 @@ class Renderer extends Object with SourceMixin {
     sb.write(text);
   }
 
-  dynamic getVariableValue(VariableNode node) {
-    var text = getVariableName(node);
+  dynamic getVariableValue(VariableNode node, {bool recursive: true}) {
+    var key = getVariableName(node);
 
     T _fixValue<T>(T value) {
       if (value is String) {
@@ -56,65 +59,125 @@ class Renderer extends Object with SourceMixin {
       }
     }
 
-    if (values.containsKey(text)) {
-      return _fixValue(values[text]);
-    } else {
-      // try dotted case
-      var parts = text.split("\.");
-      if (parts.length > 1) {
-        bool contains = true;
-        var value;
-        Map<String, dynamic> map = values;
-        for (var part in parts) {
-          if (map?.containsKey(part) == true) {
-            value = map[part];
-            if (value is Map) {
-              map = value.cast<String, dynamic>();
-            } else {
-              // this will make the next step fail
-              map = null;
-            }
-          } else {
-            contains = false;
-            break;
-          }
-        }
-        if (contains) {
-          return _fixValue(value);
-        }
+    // Non dotted?
+    if (_hasRawKey(key)) {
+      return _fixValue(_getRawKeyValue(key));
+    }
+
+    var parts = key.split("\.");
+    if (parts.length > 1) {
+      if (_hasDottedKey(parts)) {
+        return _fixValue(_getDottedKeyValue(parts));
       }
 
-      return parent?.getVariableValue(node);
+      // If it contains the first part resolve
+
+      if (_hasRawKey(parts[0])) {
+        return _getDottedKeyValue(parts);
+      }
+    }
+
+    if (recursive) {
+      return parent?.getVariableValue(node, recursive: recursive);
+    }
+
+    return null;
+  }
+
+  bool _hasRawKey(String key) {
+    return values.containsKey(key);
+  }
+
+  bool _hasDottedKey(List<String> parts) {
+    bool has = true;
+    Map<String, dynamic> map = values;
+    for (var part in parts) {
+      if (map?.containsKey(part) == true) {
+        var value = map[part];
+        if (value is Map) {
+          map = value.cast<String, dynamic>();
+        } else {
+          // this will make the next step fail
+          map = null;
+        }
+      } else {
+        has = false;
+        break;
+      }
+    }
+    return has;
+  }
+
+  dynamic _getDottedKeyValue(List<String> parts) {
+    bool contains = true;
+    var value;
+    Map<String, dynamic> map = values;
+    for (var part in parts) {
+      if (map?.containsKey(part) == true) {
+        value = map[part];
+        if (value is Map) {
+          map = value.cast<String, dynamic>();
+        } else {
+          // this will make the next step fail
+          map = null;
+        }
+      } else {
+        contains = false;
+        break;
+      }
+    }
+    if (contains) {
+      return value;
+    } else {
+      return null;
     }
   }
 
+  dynamic _getRawKeyValue(String key) {
+    return values[key];
+  }
+
+  bool _shouldWriteWhitepaces() {
+    if (hasContentOnCurrentLine) {
+      return true;
+    }
+    if (previousNode is CommentNode) {
+      return false;
+    }
+    return true;
+  }
+
   _renderBasicNode(ParserNode node) {
-    var previousNode = this.previousNode;
-    this.previousNode = node;
-    var text = getText(node);
-    if (node is TextNode) {
-      bool whitespacesOnly = isWhitespaces(text);
-      if (!text.endsWith(nl) && whitespacesOnly) {
-        pendingWhiteSpaceNode = node;
-      } else {
-        if (whitespacesOnly) {
-          if (previousNode is CommentNode) {
-            // nope
-            return;
+    //var previousNode = this.previousNode;
+    // this.previousNode = node;
+    try {
+      var text = getText(node);
+      if (node is TextNode) {
+        bool whitespacesOnly = isWhitespaces(text);
+        if (!text.endsWith(nl) && whitespacesOnly) {
+          pendingWhiteSpaceNode = node;
+        } else {
+          if (whitespacesOnly) {
+            if (!_shouldWriteWhitepaces()) {
+              // nope
+              return;
+            }
           }
+          _writeText(text);
         }
-        _writeText(text);
+      } else if (node is VariableNode) {
+        var value = getVariableValue(node);
+        if (value != null) {
+          _writeText(value.toString());
+        }
+      } else if (node is CommentNode) {
+        //ok ignore
+        pendingWhiteSpaceNode = null;
+      } else {
+        throw new UnimplementedError("_renderBasicNode $node");
       }
-    } else if (node is VariableNode) {
-      var value = getVariableValue(node);
-      if (value != null) {
-        _writeText(value.toString());
-      }
-    } else if (node is CommentNode) {
-      //ok ignore
-      pendingWhiteSpaceNode = null;
-    } else {
-      throw new UnimplementedError("_renderBasicNode $node");
+    } finally {
+      previousNode = node;
     }
   }
 
@@ -133,19 +196,24 @@ class Renderer extends Object with SourceMixin {
           if (value == null || value == false) {
             // ignore
           } else if (value == true) {
-            var renderer = new Renderer(source)..values = {};
+            var renderer = new Renderer(source)
+              ..values = {}
+              ..parent = this;
             var subResult = await renderer.renderNodes(node.nodes);
             sb.write(subResult);
           } else if (value is Map) {
             var renderer = new Renderer(source)
-              ..values = value.cast<String, dynamic>();
+              ..values = value.cast<String, dynamic>()
+              ..parent = this;
             var subResult = await renderer.renderNodes(node.nodes);
             sb.write(subResult);
           } else if (value is List) {
             for (var item in value) {
               var values = (item as Map).cast<String, dynamic>();
 
-              var renderer = new Renderer(source)..values = values;
+              var renderer = new Renderer(source)
+                ..values = values
+                ..parent = this;
               var subResult = await renderer.renderNodes(node.nodes);
               sb.write(subResult);
             }
@@ -160,7 +228,7 @@ class Renderer extends Object with SourceMixin {
 
     // Do we need to add the pending white space
     if (pendingWhiteSpaceNode != null) {
-      if (previousNode is CommentNode) {
+      if (!_shouldWriteWhitepaces()) {
         // do not write
       } else {
         var text = getText(pendingWhiteSpaceNode);

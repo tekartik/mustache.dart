@@ -1,1 +1,1 @@
-export 'src/mustache.dart' show render;
+export 'src/renderer.dart' show render;

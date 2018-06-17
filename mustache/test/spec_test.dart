@@ -3,7 +3,7 @@ library tekartik_mustache.spec_test;
 
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:tekartik_mustache/src/mustache.dart';
+import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 import 'package:dart2_constant/convert.dart';

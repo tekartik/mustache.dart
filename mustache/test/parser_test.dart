@@ -64,5 +64,13 @@ main() {
         expect(parse(" {{a}}"), [new TextNode(0, 1), new VariableNode(3, 4)]);
       });
     });
+    group('sections', () {
+      test('inner_section', () async {
+        expect(parse("{{#s1}}{{#s2}}{{/s2{{/s1}}"), [
+          new SectionNode(new VariableNode(3, 5))
+            ..nodes.add(new SectionNode(new VariableNode(10, 12)))
+        ]);
+      });
+    });
   });
 }
