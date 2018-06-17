@@ -25,6 +25,7 @@ class Renderer extends Object with SourceMixin {
   TextNode pendingWhiteSpaceNode;
   ParserNode previousNode;
   bool hasContentOnCurrentLine = false;
+  bool hasTemplateOnCurrentLine = false;
 
   /*
   _writeNode(ParserNode node, String text) {
@@ -33,14 +34,22 @@ class Renderer extends Object with SourceMixin {
   }
   */
 
-  _writeText(String text) {
-    hasContentOnCurrentLine = !text.endsWith(nl);
+  _doWriteText(String text) {
+    sb.write(text);
+    if (hasLineFeed(text)) {
+      hasContentOnCurrentLine = false;
+      hasTemplateOnCurrentLine = false;
+    } else {
+      hasContentOnCurrentLine = hasContentOnCurrentLine || text.length > 0;
+    }
+  }
 
+  _writeText(String text) {
     if (pendingWhiteSpaceNode != null) {
-      sb.write(getText(pendingWhiteSpaceNode));
+      _doWriteText(getText(pendingWhiteSpaceNode));
       pendingWhiteSpaceNode = null;
     }
-    sb.write(text);
+    _doWriteText(text);
   }
 
   dynamic getVariableValue(VariableNode node, {bool recursive: true}) {
@@ -138,13 +147,17 @@ class Renderer extends Object with SourceMixin {
   }
 
   bool _shouldWriteWhitepaces() {
-    if (hasContentOnCurrentLine) {
+    if (hasContentOnCurrentLine || hasTemplateOnCurrentLine) {
       return true;
+    } else {
+      return false;
     }
+    /*
     if (previousNode is CommentNode) {
       return false;
     }
     return true;
+    */
   }
 
   _renderBasicNode(ParserNode node) {
@@ -155,14 +168,22 @@ class Renderer extends Object with SourceMixin {
       if (node is TextNode) {
         bool whitespacesOnly = isWhitespaces(text);
         if (!text.endsWith(nl) && whitespacesOnly) {
+          // Write existing pending one first
+          if (pendingWhiteSpaceNode != null) {
+            _writeText("");
+          }
           pendingWhiteSpaceNode = node;
         } else {
-          if (whitespacesOnly) {
-            if (!_shouldWriteWhitepaces()) {
-              // nope
+          // We we know that we have either content or ending with a lf
+          // line feed only?
+          if (isLineFeed(text)) {
+            if (!hasContentOnCurrentLine) {
+              // nope and discard
+              pendingWhiteSpaceNode = null;
               return;
             }
           }
+
           _writeText(text);
         }
       } else if (node is VariableNode) {
@@ -171,8 +192,10 @@ class Renderer extends Object with SourceMixin {
           _writeText(value.toString());
         }
       } else if (node is CommentNode) {
-        //ok ignore
-        pendingWhiteSpaceNode = null;
+        if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
+          //ok ignore
+          pendingWhiteSpaceNode = null;
+        }
       } else {
         throw new UnimplementedError("_renderBasicNode $node");
       }
@@ -181,41 +204,53 @@ class Renderer extends Object with SourceMixin {
     }
   }
 
+  Renderer nestedRenderer() {
+    var renderer = new Renderer(source)
+      ..hasTemplateOnCurrentLine = true
+      ..hasContentOnCurrentLine = hasContentOnCurrentLine
+      ..parent = this;
+    return renderer;
+  }
+
+  // when returning
+  void fromNestedRendered(Renderer renderer) {
+    hasContentOnCurrentLine = renderer.hasContentOnCurrentLine;
+    hasTemplateOnCurrentLine = renderer.hasTemplateOnCurrentLine;
+  }
+
+  Future renderChildNodes(
+      List<ParserNode> nodes, Map<String, dynamic> values) async {
+    var renderer = nestedRenderer()..values = values;
+    var subResult = await renderer.renderNodes(nodes);
+    _writeText(subResult);
+    fromNestedRendered(renderer);
+  }
+
   Future<String> renderNodes(List<ParserNode> nodes) async {
     for (var node in nodes) {
+      if (!hasTemplateOnCurrentLine) {
+        hasTemplateOnCurrentLine =
+            (!(node is TextNode)) && (!(node is CommentNode));
+      }
+
       if (node is SectionNode) {
         var value = getVariableValue(node.variable);
         if (node.inverted == true) {
           if ((value == null || value == false) ||
               (value is List && value.isEmpty)) {
-            var renderer = new Renderer(source)..values = {};
-            var subResult = await renderer.renderNodes(node.nodes);
-            sb.write(subResult);
+            await renderChildNodes(node.nodes, {});
           }
         } else {
           if (value == null || value == false) {
             // ignore
           } else if (value == true) {
-            var renderer = new Renderer(source)
-              ..values = {}
-              ..parent = this;
-            var subResult = await renderer.renderNodes(node.nodes);
-            sb.write(subResult);
+            await renderChildNodes(node.nodes, {});
           } else if (value is Map) {
-            var renderer = new Renderer(source)
-              ..values = value.cast<String, dynamic>()
-              ..parent = this;
-            var subResult = await renderer.renderNodes(node.nodes);
-            sb.write(subResult);
+            await renderChildNodes(node.nodes, value.cast<String, dynamic>());
           } else if (value is List) {
             for (var item in value) {
               var values = (item as Map).cast<String, dynamic>();
-
-              var renderer = new Renderer(source)
-                ..values = values
-                ..parent = this;
-              var subResult = await renderer.renderNodes(node.nodes);
-              sb.write(subResult);
+              await renderChildNodes(node.nodes, values);
             }
           } else {
             throw new UnsupportedError("value $value $node");

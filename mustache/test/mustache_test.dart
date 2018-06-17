@@ -26,7 +26,7 @@ main() {
   });
 
   group('comments', () {
-    test('lines', () async {
+    test('single_line', () async {
       expect(await render(" {{!comment}}\n", null), "");
     });
     test('no_single_on_line', () async {
@@ -46,6 +46,9 @@ main() {
     test('spaces_no_escape', () async {
       expect(await render("{{{ var }}}", {"var": "&"}), "&");
     });
+    test('var_space_before', () async {
+      expect(await render(" {{var}}", {"var": "value"}), " value");
+    });
     test('surrounding', () async {
       expect(await render(" {{var}} ", {"var": "value"}), " value ");
     });
@@ -61,10 +64,42 @@ main() {
     test('true', () async {
       expect(await render('{{#s}}value{{/s}}', {'s': true}), "value");
     });
+    test('section_space_before', () async {
+      expect(await render(' {{#s}}{{/s}}', {'s': true}), " ");
+    });
+    test('section_space_after', () async {
+      expect(await render('{{#s}}{{/s}} ', {'s': true}), " ");
+    });
+    test('space_inner', () async {
+      expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
+    });
+    test('space_line_feed_inner', () async {
+      expect(await render('{{#s}} \n{{/s}}', {'s': true}), " \n");
+    });
+    test('line_feed_space_inner', () async {
+      expect(await render('{{#s}}\n {{/s}}', {'s': true}), " ");
+    });
+    test('space_line_feed_space_inner', () async {
+      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n");
+    });
+    test('space_before_inner', () async {
+      expect(await render(' {{#s}} {{/s}}', {'s': true}), "  ");
+    });
+    test('space_everywhere', () async {
+      expect(await render(' {{#s}} {{/s}} ', {'s': true}), "   ");
+    });
     test('spaces', () async {
       expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
-      expect(await render('{{#s}}\n{{/s}}', {'s': true}), "\n");
-      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n ");
+
+      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n");
+      expect(await render('{{#s}} {{/s}}\n', {'s': true}), " \n");
+    });
+    test('multi_section', () async {
+      expect(
+          await render(' {{#s}} {{/s}} {{#s}} {{/s}} ', {'s': true}), "     ");
+    });
+    test('inner_comment', () async {
+      expect(await render('{{#s}} {{!comment}}{{/s}}\n', {'s': true}), " \n");
     });
     test('inverted_valse', () async {
       expect(await render('{{^s}}value{{/s}}', {'s': false}), "value");
@@ -101,6 +136,12 @@ main() {
             'b': {'c': 'ERROR'}
           }),
           "");
+    });
+    test('standalone_lines', () async {
+      expect(await render('{{#s}}\n{{/s}}', {'s': true}), "");
+    });
+    test('standalone_lines_indented', () async {
+      expect(await render(' {{#s}}\n {{/s}}', {'s': true}), "");
     });
   });
 }

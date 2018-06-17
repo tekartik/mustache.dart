@@ -5,6 +5,10 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'source.dart';
 
 bool isWhitespaces(String text) => text.trim().length == 0;
+bool isLineFeed(String text) => text == nl || text == crnl;
+
+// only valid for node text that always have line cut
+bool hasLineFeed(String text) => text.endsWith(nl);
 
 class Section {
   SectionNode node;
