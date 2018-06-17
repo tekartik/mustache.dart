@@ -144,5 +144,13 @@ main() {
     test('standalone_lines_indented', () async {
       expect(await render(' {{#s}}\n {{/s}}', {'s': true}), "");
     });
+
+    test('implicit_string', () async {
+      expect(
+          await render('{{#list}}{{.}}{{/list}}', {
+            'list': ["value"]
+          }),
+          "value");
+    });
   });
 }

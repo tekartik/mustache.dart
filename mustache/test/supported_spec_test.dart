@@ -8,6 +8,6 @@ import 'spec_test.dart' as _;
 main() {
   _.skipAll = false;
   // ignore: deprecated_member_use
-  _.filterFileBasenames = ['interpolation'];
+  _.filterFileBasenames = ['interpolation', "sections"];
   _.main();
 }

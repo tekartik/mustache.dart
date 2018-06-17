@@ -243,7 +243,12 @@ class Renderer extends Object with SourceMixin {
             await renderChildNodes(node.nodes, value.cast<String, dynamic>());
           } else if (value is List) {
             for (var item in value) {
-              var values = (item as Map).cast<String, dynamic>();
+              Map<String, dynamic> values;
+              if (!(item is Map)) {
+                values = {'.': item};
+              } else {
+                values = (item as Map).cast<String, dynamic>();
+              }
               await renderChildNodes(node.nodes, values);
             }
           } else {
