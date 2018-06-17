@@ -1,10 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/parser.dart';
 import 'package:tekartik_mustache/src/source.dart';
-import 'dart:convert';
-import 'import.dart';
 
-import 'dart:async';
+import 'import.dart';
 
 String textAtNode(String source, Node node) {
   return source.substring(node.start, node.end);
@@ -16,6 +17,7 @@ class Renderer extends Object with SourceMixin {
   Renderer parent;
 
   Renderer(this.source);
+
   var sb = new StringBuffer();
 
   dynamic getVariableValue(VariableNode node) {
@@ -27,7 +29,7 @@ class Renderer extends Object with SourceMixin {
     }
   }
 
-  _renderNode(ParserNode node) {
+  _renderBasicNode(ParserNode node) {
     var text = textAtNode(source, node);
     if (node is TextNode) {
       sb.write(text);
@@ -35,6 +37,10 @@ class Renderer extends Object with SourceMixin {
       // escape
       text = htmlEscape.convert(values[text]?.toString());
       sb.write(text);
+    } else if (node is CommentNode) {
+      //ok ignore
+    } else {
+      throw new UnimplementedError("_renderBasicNode $node");
     }
   }
 
@@ -42,22 +48,39 @@ class Renderer extends Object with SourceMixin {
     for (var node in nodes) {
       if (node is SectionNode) {
         var value = getVariableValue(node.variable);
-        if (value == null || value == false) {
-          // ignore
-        } else if (value == true) {
-          var renderer = new Renderer(source)..values = values;
-          var subResult = await renderer.renderNodes(node.nodes);
-          sb.write(subResult);
+        if (node.inverted == true) {
+          if ((value == null || value == false) ||
+              (value is List && value.isEmpty)) {
+            var renderer = new Renderer(source)..values = {};
+            var subResult = await renderer.renderNodes(node.nodes);
+            sb.write(subResult);
+          }
+        } else {
+          if (value == null || value == false) {
+            // ignore
+          } else if (value == true) {
+            var renderer = new Renderer(source)..values = {};
+            var subResult = await renderer.renderNodes(node.nodes);
+            sb.write(subResult);
+          } else if (value is Map) {
+            var renderer = new Renderer(source)
+              ..values = value.cast<String, dynamic>();
+            var subResult = await renderer.renderNodes(node.nodes);
+            sb.write(subResult);
+          } else if (value is List) {
+            for (var item in value) {
+              var values = (item as Map).cast<String, dynamic>();
+
+              var renderer = new Renderer(source)..values = values;
+              var subResult = await renderer.renderNodes(node.nodes);
+              sb.write(subResult);
+            }
+          } else {
+            throw new UnsupportedError("$node");
+          }
         }
       } else {
-        var text = textAtNode(source, node);
-        if (node is TextNode) {
-          sb.write(text);
-        } else if (node is VariableNode) {
-          // escape
-          text = htmlEscape.convert(values[text]?.toString());
-          sb.write(text);
-        }
+        _renderBasicNode(node);
       }
     }
 

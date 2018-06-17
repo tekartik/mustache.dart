@@ -32,6 +32,9 @@ class Source extends Object with SourceMixin {
           case '#':
             addNode(new SectionStartNode(start + 1, end));
             break;
+          case '^':
+            addNode(new SectionStartNode(start + 1, end, inverted: true));
+            break;
           case '/':
             addNode(new SectionEndNode(start + 1, end));
             break;
@@ -56,8 +59,9 @@ class Source extends Object with SourceMixin {
 
     for (var node in nodes) {
       if (node is SectionStartNode) {
-        var sectionNode =
-            new SectionNode(new VariableNode(node.start, node.end));
+        var sectionNode = new SectionNode(
+            new VariableNode(node.start, node.end),
+            inverted: node.inverted);
         _addNode(sectionNode);
         sectionNodes.add(sectionNode);
       } else if (node is SectionEndNode) {
@@ -106,16 +110,43 @@ class VariableNode extends ParserNode {
 
 class CommentNode extends ParserNode {
   CommentNode(int start, int end) : super(start, end);
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is CommentNode && super == (other);
+  }
+
+  @override
+  String toString() {
+    return "Comment ${super.toString()}";
+  }
 }
 
 class TextNode extends ParserNode {
   TextNode(int start, int end) : super(start, end);
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is TextNode && super == (other);
+  }
+
+  @override
+  String toString() {
+    return "Text ${super.toString()}";
+  }
 }
 
 class SectionNode extends ParserNode {
   final VariableNode variable;
+  final bool inverted;
   final List<ParserNode> nodes = [];
-  SectionNode(this.variable) : super(null, null);
+  SectionNode(this.variable, {this.inverted}) : super(null, null);
 
   void add(ParserNode node) {
     nodes.add(node);
@@ -143,7 +174,8 @@ class SectionNode extends ParserNode {
 }
 
 class SectionStartNode extends ParserNode {
-  SectionStartNode(int start, int end) : super(start, end);
+  final bool inverted;
+  SectionStartNode(int start, int end, {this.inverted}) : super(start, end);
 }
 
 class SectionEndNode extends ParserNode {

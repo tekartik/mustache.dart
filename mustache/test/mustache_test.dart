@@ -23,21 +23,14 @@ main() {
     test('false_section', () async {
       expect(await render("{{#s}}{{/s}}", null), "");
     });
-    /*
-    test('one_var', () {
-      var output = parse('_{{var}}_').renderString({"var": "bob"});
-      expect(output, equals('_bob_'));
-    });
-    test('Comment', () {
-      var output = parse('_{{! i am a\n comment ! }}_').renderString({});
-      expect(output, equals('__'));
-    });
-    */
   });
 
   group('section', () {
     test('true', () async {
       expect(await render('{{#s}}value{{/s}}', {'s': true}), "value");
+    });
+    test('inverted_valse', () async {
+      expect(await render('{{^s}}value{{/s}}', {'s': false}), "value");
     });
     test('simple_map', () async {
       expect(
@@ -45,6 +38,16 @@ main() {
             's': {'var': 'value'}
           }),
           "value");
+    });
+    test('simple_list', () async {
+      expect(
+          await render('{{#s}}{{var}}{{/ss}}', {
+            's': [
+              {'var': 'value1'},
+              {'var': 'value2'}
+            ]
+          }),
+          "value1value2");
     });
   });
 }
