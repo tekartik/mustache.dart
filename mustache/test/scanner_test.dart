@@ -43,5 +43,16 @@ main() {
     });
     */
     });
+
+    group('lines', () {
+      test('nl', () async {
+        expect(await scan("\n"), [new TextScannerNode(0, 1)]);
+        expect(await scan("\n\n"), [new TextScannerNode(0, 1), new TextScannerNode(1, 2)]);
+      });
+      test('crnl', () async {
+        expect(await scan("\r\n"), [new TextScannerNode(0, 2)]);
+        expect(await scan("\r\n\r\n"), [new TextScannerNode(0, 2), new TextScannerNode(2, 4)]);
+      });
+    });
   });
 }

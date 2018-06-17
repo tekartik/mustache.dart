@@ -4,9 +4,15 @@ String openDelimiter = "{{";
 int openDelimiterLength = openDelimiter.length;
 String closeDelimiter = "}}";
 int closeDelimiterLength = closeDelimiter.length;
+String nl = '\n';
+int nlLength = nl.length;
+String crnl = '\r\n';
+int crnlLength = crnl.length;
 
 var openDelimiterRegExp = new RegExp("\{\{");
 var closeDelimiterRegExp = new RegExp("\}\}");
+var nlRegExp = new RegExp('\\n');
+var crnlRegExp = new RegExp('\\r\\n');
 
 abstract class ScannerNode extends Node {
   ScannerNode(int start, int end) : super(start, end);
@@ -56,13 +62,16 @@ class Scanner {
 
   bool get atEnd => index == end;
 
+  // To know if we scan an open mustache
+  bool atOpenDelimiter = false;
+
   void scan() {
     while (!atEnd) {
       ScannerNode node = scanOpen();
       if (node != null) {
         nodes.add(node);
       }
-      if (!atEnd) {
+      if (!atEnd && atOpenDelimiter) {
         node = scanClose();
         if (node != null) {
           nodes.add(node);
@@ -72,12 +81,36 @@ class Scanner {
   }
 
   TextScannerNode scanOpen() {
+    atOpenDelimiter = false;
+
     int start = index;
-    int end = source.substring(start).indexOf(openDelimiterRegExp);
+    var text = source.substring(start);
+    int end = text.indexOf(openDelimiterRegExp);
+
+    // We split by lines
+    // \r\n
+    int crnlEnd = text.indexOf(crnlRegExp);
+    if (crnlEnd != -1) {
+      if (end == -1 || crnlEnd < end) {
+        index = start + crnlEnd + crnlLength;
+        return new TextScannerNode(start, index);
+      }
+    }
+    // \n
+    int nlEnd = text.indexOf(nlRegExp);
+    if (nlEnd != -1) {
+      if (end == -1 || nlEnd < end) {
+        index = start + nlEnd + nlLength;
+        return new TextScannerNode(start, index);
+      }
+    }
+
     if (end == -1) {
       end = this.end;
       index = end;
     } else {
+      // Found!
+      atOpenDelimiter = true;
       end += start;
       index = end + openDelimiterLength;
       if (end == start) {

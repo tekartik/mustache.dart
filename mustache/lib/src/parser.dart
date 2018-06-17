@@ -3,13 +3,45 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:collection/collection.dart';
 import 'source.dart';
 
-class Source extends Object with SourceMixin {
+bool _isWhitespaces(String text) => text.trim().length == 0;
+
+class Section {
+  SectionNode node;
+
+  Section._() {
+    node = new SectionNode(null);
+  }
+
+  List<ParserNode> get nodes => node.nodes;
+
+  Section(SectionStartNode startNode) {
+    node = new SectionNode(
+        new VariableNode(startNode.start, startNode.end),
+        inverted: startNode.inverted);
+  }
+
+  VariableNode get variable => node.variable;
+
+  void add(ParserNode node) {
+    this.node.add(node);
+  }
+}
+
+class RootSection extends Section {
+  RootSection() : super._();
+
+  VariableNode get variable => null;
+
+}
+
+/// parse [ScannerNode] as [ParserNode]
+class Parser extends Object with SourceMixin {
   final String source;
   final List<ParserNode> nodes = [];
 
   String startDelimiter = '{{';
 
-  Source(this.source);
+  Parser(this.source);
 
   void addNode(ParserNode node) {
     nodes.add(node);
@@ -45,13 +77,19 @@ class Source extends Object with SourceMixin {
     }
 
     // Merge in sections
+    // Handle white space before/after node
     var newNodes = <ParserNode>[];
-    var sectionNodes = <SectionNode>[];
+    var sections = <Section>[new RootSection()];
+
+    // no end line
+    TextNode pendingWhiteSpaceNode;
+    ParserNode previousNode;
 
     _addNode(ParserNode node) {
-      var sectionNode = sectionNodes.length > 0 ? sectionNodes.last : null;
-      if (sectionNode != null) {
-        sectionNode.add(node);
+      previousNode = node;
+      var section = sections.length > 0 ? sections.last : null;
+      if (section != null) {
+        section.add(node);
       } else {
         newNodes.add(node);
       }
@@ -59,31 +97,60 @@ class Source extends Object with SourceMixin {
 
     for (var node in nodes) {
       if (node is SectionStartNode) {
-        var sectionNode = new SectionNode(
-            new VariableNode(node.start, node.end),
-            inverted: node.inverted);
-        _addNode(sectionNode);
-        sectionNodes.add(sectionNode);
+        var section = new Section(node);
+        // first add the node then the section
+        _addNode(section.node);
+        sections.add(section);
       } else if (node is SectionEndNode) {
         var variableNode = new VariableNode(node.start, node.end);
         var variable = getVariableName(variableNode);
         // Find the section opened from the top of the stack
-        for (int i = sectionNodes.length - 1; i >= 0; i--) {
-          var sectionNode = sectionNodes[i];
-          if (getVariableName(sectionNode.variable) == variable) {
+        // ignoring root
+        for (int i = sections.length - 1; i > 0; i--) {
+          var section = sections[i];
+          if (getVariableName(section.variable) == variable) {
             // truncate of the first found
-            sectionNodes = sectionNodes.sublist(0, i);
+            sections = sections.sublist(0, i);
             break;
           }
         }
-      } else {
+      } else if (node is TextNode) {
+        // Is it white space and no lines?
+        var text = getText(node);
+        if (!text.endsWith(nl) && _isWhitespaces(text)) {
+          pendingWhiteSpaceNode = node;
+        } else {
+          // Don't add if previous was comment
+          if (previousNode is CommentNode) {
+
+          } else {
+            _addNode(node);
+          }
+        }
+      } else if (node is CommentNode) {
+        // remove previous pending white space
+        pendingWhiteSpaceNode = null;
         _addNode(node);
+      } else {
+          //throw new UnimplementedError(node.toString());
+          _addNode(node);
+        }
+
+    }
+
+    // Do we need to add the pending white space
+    if (pendingWhiteSpaceNode != null) {
+      if (previousNode is CommentNode) {
+
+      } else {
+        _addNode(pendingWhiteSpaceNode);
       }
+      //}
     }
 
     nodes
       ..clear()
-      ..addAll(newNodes);
+      ..addAll(sections[0].nodes);
   }
 }
 
@@ -186,7 +253,7 @@ List<ParserNode> parse(String text) {
   if (text == null) {
     return null;
   }
-  var source = new Source(text);
+  var source = new Parser(text);
   source.parse();
   return source.nodes;
 }

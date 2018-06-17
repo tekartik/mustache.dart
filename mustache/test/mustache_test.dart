@@ -25,6 +25,11 @@ main() {
     });
   });
 
+  group('comments', () {
+    test('lines', () async {
+      expect(await render(" {{!comment}}\n", null), "");
+    });
+  });
   group('section', () {
     test('true', () async {
       expect(await render('{{#s}}value{{/s}}', {'s': true}), "value");
@@ -34,7 +39,7 @@ main() {
     });
     test('simple_map', () async {
       expect(
-          await render('{{#s}}{{var}}{{/ss}}', {
+          await render('{{#s}}{{var}}{{/s}}', {
             's': {'var': 'value'}
           }),
           "value");

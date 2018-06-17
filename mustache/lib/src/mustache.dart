@@ -34,9 +34,12 @@ class Renderer extends Object with SourceMixin {
     if (node is TextNode) {
       sb.write(text);
     } else if (node is VariableNode) {
-      // escape
-      text = htmlEscape.convert(values[text]?.toString());
-      sb.write(text);
+      var value = getVariableValue(node);
+      if (value != null) {
+        // escape
+        text = htmlEscape.convert(value.toString());
+        sb.write(text);
+      }
     } else if (node is CommentNode) {
       //ok ignore
     } else {
