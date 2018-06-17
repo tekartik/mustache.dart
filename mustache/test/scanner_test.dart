@@ -5,25 +5,33 @@ main() {
   group('scanner', () {
     group('basic', () {
       test('none', () async {
-        expect(await scan(null), null);
-        expect(await scan(""), []);
+        expect(scan(null), null);
+        expect(scan(""), []);
       });
 
       test('text_node', () async {
-        expect(await scan(" "), [new TextScannerNode(0, 1)]);
-        expect(await scan(" {{"), [new TextScannerNode(0, 1)]);
-        expect(await scan("{{}}"), []);
+        expect(scan(" "), [new TextScannerNode(0, 1)]);
+        expect(scan(" {{"), [new TextScannerNode(0, 1)]);
+        expect(scan("{{}}"), []);
+        expect(scan("{{ }}"), []);
       });
 
       test('mustache_node', () async {
-        expect(await scan("{{ }}"), [new MustacheScannerNode(2, 3)]);
-        expect(await scan("{{ "), [new MustacheScannerNode(2, 3)]);
+        expect(scan("{{a}}"), [new MustacheScannerNode(2, 3)]);
+        expect(scan("{{a"), [new MustacheScannerNode(2, 3)]);
+        expect(scan("{{ a }}"), [new MustacheScannerNode(3, 4)]);
+      });
+
+      test('no_escape_mustache_node', () async {
+        expect(scan("{{{ }}}"), [new MustacheScannerNode(2, 5)]);
+        expect(scan("{{{ }}"), [new MustacheScannerNode(2, 6)]);
+        expect(scan("{{{ a }}}"), [new MustacheScannerNode(2, 7)]);
       });
 
       test('mix_node', () async {
-        expect(await scan(" {{a}}"),
+        expect(scan(" {{a}}"),
             [new TextScannerNode(0, 1), new MustacheScannerNode(3, 4)]);
-        expect(await scan("{{a}} "),
+        expect(scan("{{a}} "),
             [new MustacheScannerNode(2, 3), new TextScannerNode(5, 6)]);
       });
 
@@ -47,11 +55,13 @@ main() {
     group('lines', () {
       test('nl', () async {
         expect(await scan("\n"), [new TextScannerNode(0, 1)]);
-        expect(await scan("\n\n"), [new TextScannerNode(0, 1), new TextScannerNode(1, 2)]);
+        expect(await scan("\n\n"),
+            [new TextScannerNode(0, 1), new TextScannerNode(1, 2)]);
       });
       test('crnl', () async {
         expect(await scan("\r\n"), [new TextScannerNode(0, 2)]);
-        expect(await scan("\r\n\r\n"), [new TextScannerNode(0, 2), new TextScannerNode(2, 4)]);
+        expect(await scan("\r\n\r\n"),
+            [new TextScannerNode(0, 2), new TextScannerNode(2, 4)]);
       });
     });
   });

@@ -1,4 +1,4 @@
-import 'package:tekartik_mustache/src/mustache.dart';
+import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -28,6 +28,23 @@ main() {
   group('comments', () {
     test('lines', () async {
       expect(await render(" {{!comment}}\n", null), "");
+    });
+  });
+  group('variable', () {
+    test('escape', () async {
+      expect(await render("{{var}}", {"var": "&"}), "&amp;");
+    });
+    test('spaces', () async {
+      expect(await render("{{ var }}", {"var": "&"}), "&amp;");
+    });
+    test('no_escape', () async {
+      expect(await render("{{{var}}}", {"var": "&"}), "&");
+    });
+    test('spaces_no_escape', () async {
+      expect(await render("{{{ var }}}", {"var": "&"}), "&");
+    });
+    test('surrounding', () async {
+      expect(await render(" {{var}} ", {"var": "value"}), " value ");
     });
   });
   group('section', () {

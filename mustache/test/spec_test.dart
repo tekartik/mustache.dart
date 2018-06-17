@@ -9,6 +9,11 @@ import 'package:yaml/yaml.dart';
 import 'package:dart2_constant/convert.dart';
 
 bool skipAll = true;
+List<String> _filterFileBasenames = null;
+List<String> get filterFileBasenames => _filterFileBasenames;
+@deprecated
+set filterFileBasenames(List<String> filterFileBasenames) =>
+    _filterFileBasenames = filterFileBasenames;
 
 main() {
   var specs_dir = new Directory(join('test', 'spec'));
@@ -84,6 +89,13 @@ bool shouldRun(String filename) {
   // filter out only .yml files
   if (!filename.endsWith('.yml')) {
     return false;
+  }
+  // Filter out specific files?
+  if (filterFileBasenames != null) {
+    String fileBasename = basenameWithoutExtension(filename);
+    if (!filterFileBasenames.contains(fileBasename)) {
+      return false;
+    }
   }
   return true;
 }

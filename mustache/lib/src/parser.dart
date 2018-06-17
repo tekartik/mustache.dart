@@ -1,9 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/scanner.dart';
-import 'package:collection/collection.dart';
+
 import 'source.dart';
 
-bool _isWhitespaces(String text) => text.trim().length == 0;
+bool isWhitespaces(String text) => text.trim().length == 0;
 
 class Section {
   SectionNode node;
@@ -15,8 +16,7 @@ class Section {
   List<ParserNode> get nodes => node.nodes;
 
   Section(SectionStartNode startNode) {
-    node = new SectionNode(
-        new VariableNode(startNode.start, startNode.end),
+    node = new SectionNode(new VariableNode(startNode.start, startNode.end),
         inverted: startNode.inverted);
   }
 
@@ -31,7 +31,6 @@ class RootSection extends Section {
   RootSection() : super._();
 
   VariableNode get variable => null;
-
 }
 
 /// parse [ScannerNode] as [ParserNode]
@@ -57,21 +56,62 @@ class Parser extends Object with SourceMixin {
         addNode(new TextNode(start, end));
       } else if (scannerNode is MustacheScannerNode) {
         String firstChar = source.substring(start, start + 1);
+
+        // Return true if valie
+        bool _trim() {
+          start = trimStart(start);
+          end = trimEnd(end);
+          return end > start;
+        }
+
         switch (firstChar) {
           case '!':
-            addNode(new CommentNode(start + 1, end));
+            ++start;
+            if (_trim()) {
+              addNode(new CommentNode(start, end));
+            }
+
             break;
           case '#':
-            addNode(new SectionStartNode(start + 1, end));
+            ++start;
+            if (_trim()) {
+              addNode(new SectionStartNode(start, end));
+            }
             break;
           case '^':
-            addNode(new SectionStartNode(start + 1, end, inverted: true));
+            ++start;
+            if (_trim()) {
+              addNode(new SectionStartNode(start, end, inverted: true));
+            }
             break;
           case '/':
-            addNode(new SectionEndNode(start + 1, end));
+            ++start;
+            if (_trim()) {
+              addNode(new SectionEndNode(start, end));
+            }
+            break;
+          case '{':
+            {
+              var lastChar = source.substring(end - 1, end);
+              if (lastChar == '}') {
+                end--;
+              }
+              ++start;
+              if (_trim()) {
+                addNode(new NoEscapeVariableNode(start, end));
+              }
+            }
+            break;
+          case '&':
+            ++start;
+            if (_trim()) {
+              addNode(new NoEscapeVariableNode(start, end));
+            }
             break;
           default:
-            addNode(new VariableNode(start, end));
+            if (_trim()) {
+              addNode(new VariableNode(start, end));
+            }
         }
       }
     }
@@ -115,6 +155,7 @@ class Parser extends Object with SourceMixin {
           }
         }
       } else if (node is TextNode) {
+        /*
         // Is it white space and no lines?
         var text = getText(node);
         if (!text.endsWith(nl) && _isWhitespaces(text)) {
@@ -127,21 +168,21 @@ class Parser extends Object with SourceMixin {
             _addNode(node);
           }
         }
+        */
+        _addNode(node);
       } else if (node is CommentNode) {
         // remove previous pending white space
         pendingWhiteSpaceNode = null;
         _addNode(node);
       } else {
-          //throw new UnimplementedError(node.toString());
-          _addNode(node);
-        }
-
+        //throw new UnimplementedError(node.toString());
+        _addNode(node);
+      }
     }
 
     // Do we need to add the pending white space
     if (pendingWhiteSpaceNode != null) {
       if (previousNode is CommentNode) {
-
       } else {
         _addNode(pendingWhiteSpaceNode);
       }
@@ -172,6 +213,23 @@ class VariableNode extends ParserNode {
   @override
   String toString() {
     return "Variable ${super.toString()}";
+  }
+}
+
+class NoEscapeVariableNode extends VariableNode {
+  NoEscapeVariableNode(int start, int end) : super(start, end);
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is NoEscapeVariableNode && super == (other);
+  }
+
+  @override
+  String toString() {
+    return "NoEscapeVariable ${super.toString()}";
   }
 }
 
@@ -213,6 +271,7 @@ class SectionNode extends ParserNode {
   final VariableNode variable;
   final bool inverted;
   final List<ParserNode> nodes = [];
+
   SectionNode(this.variable, {this.inverted}) : super(null, null);
 
   void add(ParserNode node) {
@@ -242,6 +301,7 @@ class SectionNode extends ParserNode {
 
 class SectionStartNode extends ParserNode {
   final bool inverted;
+
   SectionStartNode(int start, int end, {this.inverted}) : super(start, end);
 }
 

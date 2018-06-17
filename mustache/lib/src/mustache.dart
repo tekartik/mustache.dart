@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/parser.dart';
+import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
@@ -20,28 +21,69 @@ class Renderer extends Object with SourceMixin {
 
   var sb = new StringBuffer();
 
+  // no end line
+  TextNode pendingWhiteSpaceNode;
+  ParserNode previousNode;
+
+  /*
+  _writeNode(ParserNode node, String text) {
+    previousNode = node;
+    _writeText(text);
+  }
+  */
+
+  _writeText(String text) {
+    if (pendingWhiteSpaceNode != null) {
+      sb.write(getText(pendingWhiteSpaceNode));
+      pendingWhiteSpaceNode = null;
+    }
+    sb.write(text);
+  }
+
   dynamic getVariableValue(VariableNode node) {
     var text = getVariableName(node);
     if (values.containsKey(text)) {
-      return values[text];
+      var value = values[text];
+      if (value is String) {
+        if (node is NoEscapeVariableNode) {
+          return value;
+        } else {
+          // escape
+          return htmlEscape.convert(value);
+        }
+      } else {
+        return value;
+      }
     } else {
-      return parent?.getVariableName(node);
+      return parent?.getVariableValue(node);
     }
   }
 
   _renderBasicNode(ParserNode node) {
-    var text = textAtNode(source, node);
+    var previousNode = this.previousNode;
+    this.previousNode = node;
+    var text = getText(node);
     if (node is TextNode) {
-      sb.write(text);
+      bool whitespacesOnly = isWhitespaces(text);
+      if (!text.endsWith(nl) && whitespacesOnly) {
+        pendingWhiteSpaceNode = node;
+      } else {
+        if (whitespacesOnly) {
+          if (previousNode is CommentNode) {
+            // nope
+            return;
+          }
+        }
+        _writeText(text);
+      }
     } else if (node is VariableNode) {
       var value = getVariableValue(node);
       if (value != null) {
-        // escape
-        text = htmlEscape.convert(value.toString());
-        sb.write(text);
+        _writeText(value.toString());
       }
     } else if (node is CommentNode) {
       //ok ignore
+      pendingWhiteSpaceNode = null;
     } else {
       throw new UnimplementedError("_renderBasicNode $node");
     }
@@ -79,12 +121,24 @@ class Renderer extends Object with SourceMixin {
               sb.write(subResult);
             }
           } else {
-            throw new UnsupportedError("$node");
+            throw new UnsupportedError("value $value $node");
           }
         }
       } else {
         _renderBasicNode(node);
       }
+    }
+
+    // Do we need to add the pending white space
+    if (pendingWhiteSpaceNode != null) {
+      if (previousNode is CommentNode) {
+        // do not write
+      } else {
+        var text = getText(pendingWhiteSpaceNode);
+        pendingWhiteSpaceNode = null;
+        _writeText(text);
+      }
+      //}
     }
 
     return sb.toString();

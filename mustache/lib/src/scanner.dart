@@ -1,5 +1,8 @@
 import 'package:tekartik_mustache/src/node.dart';
+import 'package:tekartik_mustache/src/source.dart';
 
+String noEscapeDelimiter = "{";
+int noEscapeDelimiterLength = noEscapeDelimiter.length;
 String openDelimiter = "{{";
 int openDelimiterLength = openDelimiter.length;
 String closeDelimiter = "}}";
@@ -9,8 +12,10 @@ int nlLength = nl.length;
 String crnl = '\r\n';
 int crnlLength = crnl.length;
 
+var noEscapeDelimiterRegExp = new RegExp("\{");
 var openDelimiterRegExp = new RegExp("\{\{");
 var closeDelimiterRegExp = new RegExp("\}\}");
+var noEscapeCloseDelimiterRegExp = new RegExp("\}\}\}");
 var nlRegExp = new RegExp('\\n');
 var crnlRegExp = new RegExp('\\r\\n');
 
@@ -52,7 +57,12 @@ class MustacheScannerNode extends ScannerNode {
   }
 }
 
-class Scanner {
+// Only handle space and tab
+bool isInlineWhitespace(String chr) {
+  return chr == ' ' || chr == '\t';
+}
+
+class Scanner extends Object with SourceMixin {
   final String source;
 
   Scanner(this.source) : end = source.length;
@@ -111,8 +121,12 @@ class Scanner {
     } else {
       // Found!
       atOpenDelimiter = true;
+
+      // Trim whitespaces
+
       end += start;
       index = end + openDelimiterLength;
+
       if (end == start) {
         return null;
       }
@@ -122,14 +136,32 @@ class Scanner {
 
   MustacheScannerNode scanClose() {
     int start = index;
-    int end = source.substring(start).indexOf(closeDelimiterRegExp);
+    var text = source.substring(start);
+
+    // Are we in a triple escape mode?
+    bool noEscape = text.startsWith(noEscapeDelimiterRegExp);
+    int end = source.substring(start).indexOf(
+        noEscape ? noEscapeCloseDelimiterRegExp : closeDelimiterRegExp);
     if (end == -1) {
       end = this.end;
       index = end;
     } else {
+      // include the no escape delimited
+      if (noEscape) {
+        end++;
+      }
       end += start;
       index = end + closeDelimiterLength;
-      if (end == start) {
+
+      // trim
+      while (isInlineWhitespace(getChar(start))) {
+        start++;
+      }
+      while (isInlineWhitespace(getChar(end - 1))) {
+        end--;
+      }
+
+      if (end <= start) {
         return null;
       }
     }
