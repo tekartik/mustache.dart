@@ -77,7 +77,7 @@ main() {
       expect(await render('{{#s}} \n{{/s}}', {'s': true}), " \n");
     });
     test('line_feed_space_inner', () async {
-      expect(await render('{{#s}}\n {{/s}}', {'s': true}), " ");
+      expect(await render('{{#s}}\n {{/s}}', {'s': true}), "");
     });
     test('space_line_feed_space_inner', () async {
       expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n");

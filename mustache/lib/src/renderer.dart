@@ -180,6 +180,7 @@ class Renderer extends Object with SourceMixin {
             if (!hasContentOnCurrentLine) {
               // nope and discard
               pendingWhiteSpaceNode = null;
+              hasTemplateOnCurrentLine = false;
               return;
             }
           }
@@ -222,8 +223,10 @@ class Renderer extends Object with SourceMixin {
       List<ParserNode> nodes, Map<String, dynamic> values) async {
     var renderer = nestedRenderer()..values = values;
     var subResult = await renderer.renderNodes(nodes);
-    _writeText(subResult);
     fromNestedRendered(renderer);
+    if (subResult.length > 0) {
+      _writeText(subResult);
+    }
   }
 
   Future<String> renderNodes(List<ParserNode> nodes) async {
@@ -263,7 +266,7 @@ class Renderer extends Object with SourceMixin {
 
     // Do we need to add the pending white space
     if (pendingWhiteSpaceNode != null) {
-      if (!_shouldWriteWhitepaces()) {
+      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
         // do not write
       } else {
         var text = getText(pendingWhiteSpaceNode);
