@@ -177,5 +177,38 @@ main() {
           }),
           "value");
     });
+    test('ending crlf', () async {
+      // from spec
+      // "\r\n" should be considered a newline for standalone tags.'
+      expect(
+          await render('{{>p}}\r\n|', null, partial: (String _) => '>'), ">|");
+    });
+    test('partial_no_previous_line', () async {
+      // from spec
+      // Standalone tags should not require a newline to precede them.
+      expect(await render('  {{>p}}\n>', null, partial: (String _) => '>\n>'),
+          "  >\n  >>");
+    });
+    test('partial_no_previous_line', () async {
+      // from spec
+      // Standalone tags should not require a newline to precede them.
+      expect(await render('  {{>p}}\n>', null, partial: (String _) => '>\n>'),
+          "  >\n  >>");
+    });
+    test('partial_data_before', () async {
+      // from spec
+      // Whitespace should be left untouched.
+      expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
+          "| >\n>\n");
+    });
+
+    /*
+    - name: Inline Indentation
+    desc: Whitespace should be left untouched.
+    data: { data: '|' }
+    template: "  {{data}}  {{> partial}}\n"
+    partials: { partial: ">\n>" }
+    expected: "  |  >\n>\n"
+    */
   });
 }

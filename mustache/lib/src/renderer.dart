@@ -47,6 +47,8 @@ class Renderer extends Object with SourceMixin {
   bool hasContentOnCurrentLine = false;
   bool hasTemplateOnCurrentLine = false;
   PartialResolver partialResolver;
+  int currentIndentation = 0;
+  bool skipNextLineFeed = false;
 
   /*
   _writeNode(ParserNode node, String text) {
@@ -58,9 +60,12 @@ class Renderer extends Object with SourceMixin {
   _doWriteText(String text) {
     sb.write(text);
     if (hasLineFeed(text)) {
+      skipNextLineFeed = false;
       hasContentOnCurrentLine = false;
       hasTemplateOnCurrentLine = false;
+      currentIndentation = 0;
     } else {
+      currentIndentation += text.length;
       hasContentOnCurrentLine = hasContentOnCurrentLine || text.length > 0;
     }
   }
@@ -190,6 +195,12 @@ class Renderer extends Object with SourceMixin {
             pendingWhiteSpaceNode = null;
             hasTemplateOnCurrentLine = false;
             return;
+          } else if (skipNextLineFeed) {
+            // Special partial case
+            // if (text ==crnl) {
+            skipNextLineFeed = false;
+            return;
+            //}
           }
         }
 
@@ -217,6 +228,7 @@ class Renderer extends Object with SourceMixin {
       ..pendingWhiteSpaceNode = pendingWhiteSpaceNode
       ..hasContentOnCurrentLine = hasContentOnCurrentLine
       ..parent = this;
+
     return renderer;
   }
 
@@ -252,6 +264,11 @@ class Renderer extends Object with SourceMixin {
         _writeText(text);
       }
       //}
+    }
+
+    // Handle the line feed for last partial
+    if (skipNextLineFeed && hasLineFeed(source)) {
+      sb.writeln();
     }
 
     return sb.toString();
@@ -293,10 +310,56 @@ class Renderer extends Object with SourceMixin {
           }
         }
       } else if (node is PartialNode) {
+        // Write pending space
+        int indentation = 0;
+        bool hasContentBefore = hasContentOnCurrentLine;
+        if (!hasContentBefore) {
+          _writeText('');
+          indentation = currentIndentation;
+        }
         String template = await partialResolver(getText(node));
         if (template != null) {
+          bool endsWithLineFeed = hasLineFeed(template);
+          // reindent the template
+          // Keeping whether it has a last line
+          var sb = new StringBuffer();
+          var lines = LineSplitter.split(template).toList();
+
+          // First line don't indent
+          sb.write(lines.first);
+
+          _indent() {
+            for (int i = 0; i < indentation; i++) {
+              sb.write(' ');
+            }
+          }
+
+          // Next indent
+          if (lines.length > 1) {
+            // finish first
+            sb.writeln();
+            for (int i = 1; i < lines.length - 1; i++) {
+              _indent();
+              sb.writeln(lines[i]);
+            }
+            _indent();
+            sb.write(lines.last);
+          }
+
+          // last re-add line feed or not
+          if (endsWithLineFeed) {
+            sb.writeln();
+          }
+          template = sb.toString();
+
           var nodes = parse(template);
           await renderChildNodes(nodes, {}, source: template);
+
+          // to satisfy the specs, don't write a line feed is single
+          if (!hasContentBefore) {
+            skipNextLineFeed = true;
+          }
+          //}
         }
       } else {
         _renderBasicNode(node);
