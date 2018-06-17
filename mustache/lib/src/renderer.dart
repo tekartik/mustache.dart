@@ -146,20 +146,6 @@ class Renderer extends Object with SourceMixin {
     return values[key];
   }
 
-  bool _shouldWriteWhitepaces() {
-    if (hasContentOnCurrentLine || hasTemplateOnCurrentLine) {
-      return true;
-    } else {
-      return false;
-    }
-    /*
-    if (previousNode is CommentNode) {
-      return false;
-    }
-    return true;
-    */
-  }
-
   _renderBasicNode(ParserNode node) {
     //var previousNode = this.previousNode;
     // this.previousNode = node;
@@ -208,6 +194,7 @@ class Renderer extends Object with SourceMixin {
   Renderer nestedRenderer() {
     var renderer = new Renderer(source)
       ..hasTemplateOnCurrentLine = true
+      ..pendingWhiteSpaceNode = pendingWhiteSpaceNode
       ..hasContentOnCurrentLine = hasContentOnCurrentLine
       ..parent = this;
     return renderer;
@@ -221,12 +208,16 @@ class Renderer extends Object with SourceMixin {
 
   Future renderChildNodes(
       List<ParserNode> nodes, Map<String, dynamic> values) async {
+    // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
     var renderer = nestedRenderer()..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
+    pendingWhiteSpaceNode = null;
     if (subResult.length > 0) {
       _writeText(subResult);
     }
+    pendingWhiteSpaceNode = renderer.pendingWhiteSpaceNode;
+    // hasTemplateOnCurrentLine = previousHasTemplateOnCurrentLine;
   }
 
   Future<String> renderNodes(List<ParserNode> nodes) async {

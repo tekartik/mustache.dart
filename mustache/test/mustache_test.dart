@@ -76,7 +76,7 @@ main() {
     test('space_line_feed_inner', () async {
       expect(await render('{{#s}} \n{{/s}}', {'s': true}), " \n");
     });
-    test('line_feed_space_inner', () async {
+    test('end_space_inner', () async {
       expect(await render('{{#s}}\n {{/s}}', {'s': true}), "");
     });
     test('space_line_feed_space_inner', () async {
@@ -88,10 +88,11 @@ main() {
     test('space_everywhere', () async {
       expect(await render(' {{#s}} {{/s}} ', {'s': true}), "   ");
     });
+    test('space_char_after', () async {
+      expect(await render('{{#s}}\n {{/s}}a', {'s': true}), " a");
+    });
     test('spaces', () async {
       expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
-
-      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n");
       expect(await render('{{#s}} {{/s}}\n', {'s': true}), " \n");
     });
     test('multi_section', () async {
