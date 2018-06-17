@@ -42,19 +42,48 @@ class Renderer extends Object with SourceMixin {
 
   dynamic getVariableValue(VariableNode node) {
     var text = getVariableName(node);
-    if (values.containsKey(text)) {
-      var value = values[text];
+
+    T _fixValue<T>(T value) {
       if (value is String) {
         if (node is NoEscapeVariableNode) {
           return value;
         } else {
           // escape
-          return htmlEscape.convert(value);
+          return htmlEscape.convert(value) as T;
         }
       } else {
         return value;
       }
+    }
+
+    if (values.containsKey(text)) {
+      return _fixValue(values[text]);
     } else {
+      // try dotted case
+      var parts = text.split("\.");
+      if (parts.length > 1) {
+        bool contains = true;
+        var value;
+        Map<String, dynamic> map = values;
+        for (var part in parts) {
+          if (map?.containsKey(part) == true) {
+            value = map[part];
+            if (value is Map) {
+              map = value.cast<String, dynamic>();
+            } else {
+              // this will make the next step fail
+              map = null;
+            }
+          } else {
+            contains = false;
+            break;
+          }
+        }
+        if (contains) {
+          return _fixValue(value);
+        }
+      }
+
       return parent?.getVariableValue(node);
     }
   }

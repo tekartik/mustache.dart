@@ -46,6 +46,13 @@ main() {
     test('surrounding', () async {
       expect(await render(" {{var}} ", {"var": "value"}), " value ");
     });
+    test('dotted', () async {
+      expect(
+          await render("{{var.sub}}", {
+            "var": {"sub": "value"}
+          }),
+          "value");
+    });
   });
   group('section', () {
     test('true', () async {
