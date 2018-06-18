@@ -20,7 +20,7 @@ class Section {
   List<ParserNode> get nodes => node.nodes;
 
   Section(SectionStartNode startNode) {
-    node = new SectionNode(new VariableNode(startNode.start, startNode.end),
+    node = new SectionNode(new VariableNode(startNode.text),
         inverted: startNode.inverted);
   }
 
@@ -53,75 +53,69 @@ class Parser extends Object with SourceMixin {
   void parse() {
     var scannerNodes = scan(source);
 
+    // standalone status
     for (var scannerNode in scannerNodes) {
-      int start = scannerNode.start;
-      int end = scannerNode.end;
       if (scannerNode is TextScannerNode) {
-        addNode(new TextNode(start, end));
+        addNode(new TextNode(scannerNode.text));
       } else if (scannerNode is MustacheScannerNode) {
-        String firstChar = source.substring(start, start + 1);
+        var text = scannerNode.text;
+        String firstChar = scannerNode.text.substring(0, 1);
 
         // Return true if valie
-        bool _trim() {
-          start = trimStart(start);
-          end = trimEnd(end);
-          return end > start;
+        bool _trim(int start) {
+          text = text.substring(start).trim();
+          return text.length > 0;
         }
 
         switch (firstChar) {
           case '!':
-            ++start;
-            if (_trim()) {
-              addNode(new CommentNode(start, end));
+            if (_trim(1)) {
+              addNode(new CommentNode(text));
             }
 
             break;
           case '#':
-            ++start;
-            if (_trim()) {
-              addNode(new SectionStartNode(start, end));
+            if (_trim(1)) {
+              addNode(new SectionStartNode(text));
             }
             break;
           case '^':
-            ++start;
-            if (_trim()) {
-              addNode(new SectionStartNode(start, end, inverted: true));
+            if (_trim(1)) {
+              addNode(new SectionStartNode(text, inverted: true));
             }
             break;
           case '/':
-            ++start;
-            if (_trim()) {
-              addNode(new SectionEndNode(start, end));
+            if (_trim(1)) {
+              addNode(new SectionEndNode(text));
             }
             break;
           case '{':
             {
-              var lastChar = source.substring(end - 1, end);
+              var lastChar = text.substring(text.length - 1);
               if (lastChar == '}') {
-                end--;
+                text = text.substring(1, text.length - 1);
+              } else {
+                text = text.substring(1);
               }
-              ++start;
-              if (_trim()) {
-                addNode(new NoEscapeVariableNode(start, end));
+              if (_trim(0)) {
+                addNode(new NoEscapeVariableNode(text));
               }
             }
             break;
           case '&':
-            ++start;
-            if (_trim()) {
-              addNode(new NoEscapeVariableNode(start, end));
+            if (_trim(1)) {
+              addNode(new NoEscapeVariableNode(text));
             }
             break;
           case '>':
-            ++start;
-            if (_trim()) {
-              addNode(new PartialNode(start, end));
+            if (_trim(1)) {
+              addNode(new PartialNode(text));
             }
             break;
 
           default:
-            if (_trim()) {
-              addNode(new VariableNode(start, end));
+            if (_trim(0)) {
+              addNode(new VariableNode(text));
             }
         }
       }
@@ -153,13 +147,13 @@ class Parser extends Object with SourceMixin {
         _addNode(section.node);
         sections.add(section);
       } else if (node is SectionEndNode) {
-        var variableNode = new VariableNode(node.start, node.end);
-        var variable = getVariableName(variableNode);
+        var variableNode = new VariableNode(node.text);
+        var variable = variableNode.name;
         // Find the section opened from the top of the stack
         // ignoring root
         for (int i = sections.length - 1; i > 0; i--) {
           var section = sections[i];
-          if (getVariableName(section.variable) == variable) {
+          if (section.variable.name == variable) {
             // truncate of the first found
             sections = sections.sublist(0, i);
             break;
@@ -207,14 +201,16 @@ class Parser extends Object with SourceMixin {
 }
 
 abstract class ParserNode extends Node {
-  ParserNode(int start, int end) : super(start, end);
+  ParserNode(String text) : super(text);
 }
 
 class VariableNode extends ParserNode {
-  VariableNode(int start, int end) : super(start, end);
+  VariableNode(String text) : super(text);
 
   @override
   int get hashCode => super.hashCode;
+
+  String get name => text;
 
   @override
   bool operator ==(other) {
@@ -228,7 +224,7 @@ class VariableNode extends ParserNode {
 }
 
 class NoEscapeVariableNode extends VariableNode {
-  NoEscapeVariableNode(int start, int end) : super(start, end);
+  NoEscapeVariableNode(String text) : super(text);
 
   @override
   int get hashCode => super.hashCode;
@@ -245,7 +241,7 @@ class NoEscapeVariableNode extends VariableNode {
 }
 
 class CommentNode extends ParserNode {
-  CommentNode(int start, int end) : super(start, end);
+  CommentNode(String text) : super(text);
 
   @override
   int get hashCode => super.hashCode;
@@ -257,12 +253,12 @@ class CommentNode extends ParserNode {
 
   @override
   String toString() {
-    return "Comment ${super.toString()}";
+    return "Comment ${text}";
   }
 }
 
 class TextNode extends ParserNode {
-  TextNode(int start, int end) : super(start, end);
+  TextNode(String text) : super(text);
 
   @override
   int get hashCode => super.hashCode;
@@ -283,7 +279,7 @@ class SectionNode extends ParserNode {
   final bool inverted;
   final List<ParserNode> nodes = [];
 
-  SectionNode(this.variable, {this.inverted}) : super(null, null);
+  SectionNode(this.variable, {this.inverted}) : super(null);
 
   void add(ParserNode node) {
     nodes.add(node);
@@ -313,15 +309,23 @@ class SectionNode extends ParserNode {
 class SectionStartNode extends ParserNode {
   final bool inverted;
 
-  SectionStartNode(int start, int end, {this.inverted}) : super(start, end);
+  SectionStartNode(String text, {this.inverted}) : super(text);
 }
 
 class SectionEndNode extends ParserNode {
-  SectionEndNode(int start, int end) : super(start, end);
+  SectionEndNode(String text) : super(text);
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is SectionEndNode && super == (other);
+  }
 }
 
 class PartialNode extends ParserNode {
-  PartialNode(int start, int end) : super(start, end);
+  PartialNode(String text) : super(text);
 
   @override
   int get hashCode => super.hashCode;

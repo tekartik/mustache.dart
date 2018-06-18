@@ -60,12 +60,10 @@ _defineGroupFromFile(filename, String text) {
         return partials[name] as String;
       };
 
-      /*
       //swap the data.lambda with a dart real function
       if (data['lambda'] != null) {
         data['lambda'] = lambdas[t['name']];
       }
-      */
       reason.write(" with '$data'");
 
       if (partials != null) {

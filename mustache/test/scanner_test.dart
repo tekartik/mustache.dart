@@ -3,6 +3,15 @@ import 'package:test/test.dart';
 
 main() {
   group('scanner', () {
+    group('node', () {
+      test('equals', () {
+        expect(new TextScannerNode("text"), new TextScannerNode("text"));
+        expect(new TextScannerNode(null), new TextScannerNode(null));
+        expect(new TextScannerNode(null), isNot(new TextScannerNode("text")));
+        expect(
+            new TextScannerNode("other"), isNot(new TextScannerNode("text")));
+      });
+    });
     group('basic', () {
       test('none', () async {
         expect(scan(null), null);
@@ -10,29 +19,29 @@ main() {
       });
 
       test('text_node', () async {
-        expect(scan(" "), [new TextScannerNode(0, 1)]);
-        expect(scan(" {{"), [new TextScannerNode(0, 1)]);
+        expect(scan(" "), [new TextScannerNode(" ")]);
+        expect(scan(" {{"), [new TextScannerNode(" ")]);
         expect(scan("{{}}"), []);
         expect(scan("{{ }}"), []);
       });
 
       test('mustache_node', () async {
-        expect(scan("{{a}}"), [new MustacheScannerNode(2, 3)]);
-        expect(scan("{{a"), [new MustacheScannerNode(2, 3)]);
-        expect(scan("{{ a }}"), [new MustacheScannerNode(3, 4)]);
+        expect(scan("{{a}}"), [new MustacheScannerNode("a")]);
+        expect(scan("{{a"), [new MustacheScannerNode("a")]);
+        expect(scan("{{ a }}"), [new MustacheScannerNode("a")]);
       });
 
       test('no_escape_mustache_node', () async {
-        expect(scan("{{{ }}}"), [new MustacheScannerNode(2, 5)]);
-        expect(scan("{{{ }}"), [new MustacheScannerNode(2, 6)]);
-        expect(scan("{{{ a }}}"), [new MustacheScannerNode(2, 7)]);
+        expect(scan("{{{ }}}"), [new MustacheScannerNode("{ }")]);
+        expect(scan("{{{ }}"), [new MustacheScannerNode("{ }}")]);
+        expect(scan("{{{ a }}}"), [new MustacheScannerNode("{ a }")]);
       });
 
       test('mix_node', () async {
         expect(scan(" {{a}}"),
-            [new TextScannerNode(0, 1), new MustacheScannerNode(3, 4)]);
+            [new TextScannerNode(" "), new MustacheScannerNode("a")]);
         expect(scan("{{a}} "),
-            [new MustacheScannerNode(2, 3), new TextScannerNode(5, 6)]);
+            [new MustacheScannerNode("a"), new TextScannerNode(" ")]);
       });
 
       /*
@@ -54,14 +63,28 @@ main() {
 
     group('lines', () {
       test('nl', () async {
-        expect(await scan("\n"), [new TextScannerNode(0, 1)]);
+        expect(await scan("\n"), [new TextScannerNode("\n")]);
         expect(await scan("\n\n"),
-            [new TextScannerNode(0, 1), new TextScannerNode(1, 2)]);
+            [new TextScannerNode("\n"), new TextScannerNode("\n")]);
       });
       test('crnl', () async {
-        expect(await scan("\r\n"), [new TextScannerNode(0, 2)]);
+        expect(await scan("\r\n"), [new TextScannerNode("\r\n")]);
         expect(await scan("\r\n\r\n"),
-            [new TextScannerNode(0, 2), new TextScannerNode(2, 4)]);
+            [new TextScannerNode("\r\n"), new TextScannerNode("\r\n")]);
+      });
+    });
+
+    group('delimiters', () {
+      test('new_delimiter', () async {
+        var scanner = new Scanner('{{=[ ]=}}');
+        scanner.scan();
+        expect(scanner.delimiter.open, '[');
+        expect(scanner.delimiter.close, ']');
+        expect(scanner.delimiter.isDefault, false);
+      });
+      test('new_delimiter_node', () async {
+        expect(
+            await scan('{{=[ ]=}}[nodex]'), [new MustacheScannerNode("nodex")]);
       });
     });
   });

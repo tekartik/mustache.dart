@@ -5,12 +5,6 @@ import 'package:tekartik_mustache/src/scanner.dart';
 abstract class SourceMixin {
   String get source;
 
-  String getText(Node node) {
-    return textAtNode(source, node);
-  }
-
-  String getVariableName(VariableNode node) => getText(node);
-
   String getChar(int index) {
     return source.substring(index, index + 1);
   }
@@ -28,5 +22,9 @@ abstract class SourceMixin {
       end--;
     }
     return end;
+  }
+
+  String getSourceText(int start, int end) {
+    return source.substring(start, end);
   }
 }

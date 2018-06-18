@@ -8,30 +8,6 @@ import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
 
-String textAtNode(String source, Node node) {
-  return source.substring(node.start, node.end);
-}
-
-class SourceVariable extends SourceNode<VariableNode> {
-  SourceVariable(String source, VariableNode node) : super(source, node);
-
-  String get name => getVariableName(node);
-}
-
-class SourceNode<T extends ParserNode> extends Object with SourceMixin {
-  @override
-  final String source;
-  final T node;
-
-  SourceNode(this.source, this.node);
-}
-
-class SourceText extends SourceNode<TextNode> {
-  SourceText(String source, TextNode node) : super(source, node);
-
-  String get text => getText(node);
-}
-
 class Renderer extends Object with SourceMixin {
   final String source;
   Map<String, dynamic> values;
@@ -42,7 +18,7 @@ class Renderer extends Object with SourceMixin {
   var sb = new StringBuffer();
 
   // no end line
-  SourceText pendingWhiteSpaceNode;
+  TextNode pendingWhiteSpaceNode;
 
   bool hasContentOnCurrentLine = false;
   bool hasTemplateOnCurrentLine = false;
@@ -78,18 +54,29 @@ class Renderer extends Object with SourceMixin {
     _doWriteText(text);
   }
 
-  dynamic getVariableValue(SourceVariable variable, {bool recursive: true}) {
-    var node = variable.node;
+  Future getVariableValue(VariableNode variable, {bool recursive: true}) async {
+    var node = variable;
     var key = variable.name;
 
-    T _fixValue<T>(T value) {
+    Future _fixValue(dynamic value) async {
       if (value is String) {
         if (node is NoEscapeVariableNode) {
           return value;
         } else {
           // escape
-          return htmlEscape.convert(value) as T;
+          return htmlEscape.convert(value);
         }
+      } else if (value is Function) {
+        var result = await value(key) as String;
+        if (result != null) {
+          var renderer = new Renderer(result)
+            ..values = values
+            ..partialResolver = partialResolver;
+          result = await renderer.render();
+          // escape
+          result = await _fixValue(result) as String;
+        }
+        return await result;
       } else {
         return value;
       }
@@ -97,13 +84,13 @@ class Renderer extends Object with SourceMixin {
 
     // Non dotted?
     if (_hasRawKey(key)) {
-      return _fixValue(_getRawKeyValue(key));
+      return await _fixValue(_getRawKeyValue(key));
     }
 
     var parts = key.split("\.");
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
-        return _fixValue(_getDottedKeyValue(parts));
+        return await _fixValue(_getDottedKeyValue(parts));
       }
 
       // If it contains the first part resolve
@@ -114,7 +101,7 @@ class Renderer extends Object with SourceMixin {
     }
 
     if (recursive) {
-      return parent?.getVariableValue(variable, recursive: recursive);
+      return await parent?.getVariableValue(variable, recursive: recursive);
     }
 
     return null;
@@ -173,11 +160,11 @@ class Renderer extends Object with SourceMixin {
     return values[key];
   }
 
-  _renderBasicNode(ParserNode node) {
+  _renderBasicNode(ParserNode node) async {
     //var previousNode = this.previousNode;
     // this.previousNode = node;
 
-    var text = getText(node);
+    var text = node.text;
     if (node is TextNode) {
       bool whitespacesOnly = isWhitespaces(text);
       if (!text.endsWith(nl) && whitespacesOnly) {
@@ -185,7 +172,7 @@ class Renderer extends Object with SourceMixin {
         if (pendingWhiteSpaceNode != null) {
           _writeText("");
         }
-        pendingWhiteSpaceNode = new SourceText(source, node);
+        pendingWhiteSpaceNode = node;
       } else {
         // We we know that we have either content or ending with a lf
         // line feed only?
@@ -207,7 +194,7 @@ class Renderer extends Object with SourceMixin {
         _writeText(text);
       }
     } else if (node is VariableNode) {
-      var value = getVariableValue(new SourceVariable(source, node));
+      var value = await getVariableValue(node);
       if (value != null) {
         _writeText(value.toString());
       }
@@ -282,7 +269,7 @@ class Renderer extends Object with SourceMixin {
       }
 
       if (node is SectionNode) {
-        var value = getVariableValue(new SourceVariable(source, node.variable));
+        var value = await getVariableValue(node.variable);
         if (node.inverted == true) {
           if ((value == null || value == false) ||
               (value is List && value.isEmpty)) {
@@ -317,7 +304,7 @@ class Renderer extends Object with SourceMixin {
           _writeText('');
           indentation = currentIndentation;
         }
-        String template = await partialResolver(getText(node));
+        String template = await partialResolver(node.text);
         if (template != null) {
           bool endsWithLineFeed = hasLineFeed(template);
           // reindent the template
@@ -362,7 +349,7 @@ class Renderer extends Object with SourceMixin {
           //}
         }
       } else {
-        _renderBasicNode(node);
+        await _renderBasicNode(node);
       }
     }
   }
@@ -387,3 +374,4 @@ Future<String> render(String source, Map<String, dynamic> values,
 }
 
 typedef FutureOr<String> PartialResolver(String name);
+typedef FutureOr<String> Lambda(String name);

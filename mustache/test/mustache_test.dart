@@ -25,6 +25,11 @@ main() {
     });
   });
 
+  group('lines', () {
+    test('empty_lines', () async {
+      expect(await render("\n\n", null), "\n\n");
+    }, skip: true); //TODO
+  });
   group('comments', () {
     test('single_line', () async {
       expect(await render(" {{!comment}}\n", null), "");
@@ -201,14 +206,20 @@ main() {
       expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
           "| >\n>\n");
     });
+  });
 
-    /*
-    - name: Inline Indentation
-    desc: Whitespace should be left untouched.
-    data: { data: '|' }
-    template: "  {{data}}  {{> partial}}\n"
-    partials: { partial: ">\n>" }
-    expected: "  |  >\n>\n"
-    */
+  group('lambdas', () {
+    test('simple_lambda', () async {
+      expect(await render("{{d}}", {"f": (_) => "value"}), "value");
+    });
+
+    test('var_lambda', () async {
+      expect(await render("{{f}}", {"f": (_) => "{{var}}", "var": "value"}),
+          "value");
+    });
+  });
+
+  group('delimiters', () {
+    test('simple_delimiter', () {});
   });
 }
