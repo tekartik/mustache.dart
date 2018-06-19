@@ -2,7 +2,7 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:test/test.dart';
 
 // Mustache node
-ScannerNode mn(String text) => new MustacheScannerNode(text);
+ScannerNode mn(String text) => new MustacheScannerNode.withText(text);
 ScannerNode tn(String text) => new TextScannerNode(text);
 
 main() {

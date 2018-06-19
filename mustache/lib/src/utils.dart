@@ -31,3 +31,17 @@ int crUnit = 13;
 int nlUnit = 10;
 int tabUnit = 9;
 int spaceUnit = 32;
+
+// json positive basic testing
+bool isPositiveValue(value) {
+  if (value == true) {
+    return true;
+  }
+  if (value is String) {
+    return value.isNotEmpty;
+  }
+  if (value is num) {
+    return value != 0;
+  }
+  return false;
+}

@@ -22,7 +22,9 @@ abstract class SourceMixin {
     return end;
   }
 
-  String getSourceText(int start, int end) {
-    return source.substring(start, end);
-  }
+  String getSourceText(int start, int end) => sourceGetText(source, start, end);
+}
+
+String sourceGetText(String source, int start, int end) {
+  return source.substring(start, end);
 }

@@ -246,11 +246,31 @@ main() {
 
   group('lambdas', () {
     test('simple_lambda', () async {
-      expect(await render("{{f}}", {"f": (_) => "value"}), "value");
+      expect(
+          await render("{{f}}", {
+            "f": (String name) {
+              // expected name
+              expect(name, "f");
+              return "value";
+            }
+          }),
+          "value");
     });
 
     test('var_lambda', () async {
       expect(await render("{{f}}", {"f": (_) => "{{var}}", "var": "value"}),
+          "value");
+    });
+
+    test('lambda_section', () async {
+      expect(
+          await render("{{#f}}inner{{/f}}", {
+            "f": (String name) {
+              // expected name
+              expect(name, "inner");
+              return "value";
+            }
+          }),
           "value");
     });
   });

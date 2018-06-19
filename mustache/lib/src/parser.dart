@@ -295,6 +295,8 @@ class SectionNode extends ParserNode {
   final bool inverted;
   final List<ParserNode> nodes = [];
 
+  String get key => variable.name;
+
   SectionNode(this.variable, {this.inverted}) : super(null);
 
   void add(ParserNode node) {
@@ -309,7 +311,7 @@ class SectionNode extends ParserNode {
     if (other is SectionNode) {
       if (other.variable == variable) {
         if (const ListEquality().equals(other.nodes, nodes)) {
-          return true;
+          return super == (other);
         }
       }
     }

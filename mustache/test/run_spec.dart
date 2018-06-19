@@ -5,7 +5,7 @@ import 'spec_test.dart' as _;
 main() {
   _.skipAll = false;
   // Temp
-  // _.filterFileBasenames = ['~lambdas'];
-  _.filterFileBasenames = ['delimiters'];
+  _.filterFileBasenames = ['~lambdas'];
+  // _.filterFileBasenames = ['delimiters'];
   _.main();
 }

@@ -38,32 +38,64 @@ class Renderer {
     sb.write(text);
   }
 
+  dynamic getRawVariableValue(VariableNode variable, {bool recursive: true}) {
+    var key = variable.name;
+
+    // Non dotted?
+    if (_hasRawKey(key)) {
+      return _getRawKeyValue(key);
+    }
+
+    var parts = key.split("\.");
+    if (parts.length > 1) {
+      if (_hasDottedKey(parts)) {
+        return _getDottedKeyValue(parts);
+      }
+
+      // If it contains the first part resolve
+
+      if (_hasRawKey(parts[0])) {
+        return _getDottedKeyValue(parts);
+      }
+    }
+
+    if (recursive) {
+      return parent?.getRawVariableValue(variable, recursive: recursive);
+    }
+
+    return null;
+  }
+
+  Future fixValue(VariableNode node, String key, dynamic value) async {
+    if (value is String) {
+      if (node is NoEscapeVariableNode) {
+        return value;
+      } else {
+        // escape
+        return htmlEscape.convert(value);
+      }
+    } else if (value is Function) {
+      var result = await value(key) as String;
+      if (result != null) {
+        var renderer = new Renderer(result)
+          ..values = values
+          ..partialResolver = partialResolver;
+        result = await renderer.render();
+        // escape
+        result = await fixValue(node, key, result) as String;
+      }
+      return result;
+    } else {
+      return value;
+    }
+  }
+
   Future getVariableValue(VariableNode variable, {bool recursive: true}) async {
     var node = variable;
     var key = variable.name;
 
-    Future _fixValue(dynamic value) async {
-      if (value is String) {
-        if (node is NoEscapeVariableNode) {
-          return value;
-        } else {
-          // escape
-          return htmlEscape.convert(value);
-        }
-      } else if (value is Function) {
-        var result = await value(key) as String;
-        if (result != null) {
-          var renderer = new Renderer(result)
-            ..values = values
-            ..partialResolver = partialResolver;
-          result = await renderer.render();
-          // escape
-          result = await _fixValue(result) as String;
-        }
-        return await result;
-      } else {
-        return value;
-      }
+    dynamic _fixValue(value) {
+      return fixValue(node, key, value);
     }
 
     // Non dotted?
@@ -244,7 +276,22 @@ class Renderer {
       var node = currentNode;
 
       if (node is SectionNode) {
-        var value = await getVariableValue(node.variable);
+        var value = await getRawVariableValue(node.variable);
+        var key = node.key;
+
+        if (value is Function) {
+          // section lambda
+          key = "inner";
+          var result = await fixValue(node.variable, key, value) as String;
+          _writeText(result);
+          /*
+          var nodes = parse(template);
+          await renderChildNodes(nodes, {}, source: template);
+          */
+        } else {
+          value = await fixValue(node.variable, node.key, value);
+        }
+
         if (node.inverted == true) {
           if ((value == null || value == false) ||
               (value is List && value.isEmpty)) {
@@ -253,7 +300,7 @@ class Renderer {
         } else {
           if (value == null || value == false) {
             // ignore
-          } else if (value == true) {
+          } else if (isPositiveValue(value)) {
             await renderChildNodes(node.nodes, {});
           } else if (value is Map) {
             await renderChildNodes(node.nodes, value.cast<String, dynamic>());
@@ -267,8 +314,10 @@ class Renderer {
               }
               await renderChildNodes(node.nodes, values);
             }
+          } else if (value is Function) {
           } else {
-            throw new UnsupportedError("value $value $node");
+            throw new UnsupportedError(
+                "value $value (${value.runtimeType}) node $node");
           }
         }
       } else if (node is PartialNode) {

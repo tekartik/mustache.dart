@@ -40,8 +40,17 @@ class TextScannerNode extends ScannerNode {
   TextScannerNode(String text) : super(text);
 }
 
-class MustacheScannerNode extends ScannerNode {
-  MustacheScannerNode(String text) : super(text);
+class MustacheScannerNode extends ScannerNode with SourceMixin {
+  final String source;
+  final int start;
+  final int end;
+  MustacheScannerNode(this.source, this.start, this.end)
+      : super(sourceGetText(source, start, end));
+  MustacheScannerNode.withText(String text)
+      : source = null,
+        start = null,
+        end = null,
+        super(text);
 }
 
 // Scan by line
@@ -209,7 +218,7 @@ class Scanner extends Object with SourceMixin {
       // Skip it from result
       // return null;
     }
-    return new MustacheScannerNode(getSourceText(start, end));
+    return new MustacheScannerNode(source, start, end);
   }
 
   final List<ScannerNode> nodes = [];
