@@ -28,7 +28,7 @@ main() {
   group('lines', () {
     test('empty_lines', () async {
       expect(await render("\n\n", null), "\n\n");
-    }, skip: true); //TODO
+    });
   });
   group('comments', () {
     test('single_line', () async {
@@ -217,7 +217,9 @@ main() {
     test('partial_data_before_2', () async {
       // from spec
       // Whitespace should be left untouched.
-      expect(await render(' {{data}} {{>p}}\n', {'data': '|'}, partial: (String _) => '>\n>'),
+      expect(
+          await render(' {{data}} {{>p}}\n', {'data': '|'},
+              partial: (String _) => '>\n>'),
           " | >\n>\n");
     });
 
@@ -229,13 +231,12 @@ main() {
     partials: { partial: ">\n>" }
     expected: "  |  >\n>\n"
     */
-
   });
 
   group('lambdas', () {
     test('simple_lambda', () async {
-      expect(await render("{{d}}", {"f": (_) => "value"}), "value");
-    }, skip: true);
+      expect(await render("{{f}}", {"f": (_) => "value"}), "value");
+    });
 
     test('var_lambda', () async {
       expect(await render("{{f}}", {"f": (_) => "{{var}}", "var": "value"}),

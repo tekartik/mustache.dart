@@ -34,45 +34,8 @@ class Renderer {
 
   PartialResolver partialResolver;
 
-  /*
-  _writeNode(ParserNode node, String text) {
-    previousNode = node;
-    _writeText(text);
-  }
-  */
-
   void _writeText(String text) {
-    currentLineBuffer.write(text);
-  }
-
-  void _flushLine() {
-    // Look for every node in this line
-    bool hasStandaloneTag = false;
-    for (int i = currentNodeIndex; i >= 0; i--) {
-      var node = nodes[i];
-      if (node is TextNode) {
-        if (!isWhitespaces(node.text)) {
-          hasStandaloneTag = false;
-          break;
-        }
-      } else if (node is CommentNode ||
-          node is SectionStartNode ||
-          node is SectionEndNode) {
-        if (hasStandaloneTag) {
-          hasStandaloneTag = false;
-          break;
-        } else {
-          hasStandaloneTag = true;
-        }
-      }
-    }
-
-    if (hasStandaloneTag) {
-      // skip
-    } else {
-      sb.write(currentLineBuffer.toString());
-      currentLineBuffer = new StringBuffer();
-    }
+    sb.write(text);
   }
 
   Future getVariableValue(VariableNode variable, {bool recursive: true}) async {
@@ -181,60 +144,15 @@ class Renderer {
     return values[key];
   }
 
-  var currentLineBuffer = new StringBuffer();
-
   void renderTextNode(TextNode node) {
     var text = node.text;
     _writeText(text);
-    if (hasLineFeed(text) || nextNode == null) {
-      _flushLine();
-    }
   }
 
-  _renderBasicNode(ParserNode node) async {
-    //var previousNode = this.previousNode;
-    // this.previousNode = node;
-
-    var text = node.text;
-    if (node is TextNode) {
-      bool whitespacesOnly = isWhitespaces(text);
-      if (!text.endsWith(nl) && whitespacesOnly) {
-        /*
-        // Write existing pending one first
-        if (pendingWhiteSpaceNode != null) {
-          _writeText("");
-        }
-        pendingWhiteSpaceNode = node;
-        */
-      } else {
-        /*
-        // We we know that we have either content or ending with a lf
-        // line feed only?
-        if (isLineFeed(text)) {
-          if (!hasContentOnCurrentLine) {
-            // nope and discard
-            pendingWhiteSpaceNode = null;
-            hasTemplateOnCurrentLine = false;
-            return;
-          } else if (skipNextLineFeed) {
-            // Special partial case
-            // if (text ==crnl) {
-            skipNextLineFeed = false;
-            return;
-            //}
-          }
-        }
-        */
-
-        _writeText(text);
-      }
-    } else if (node is VariableNode) {
-      var value = await getVariableValue(node);
-      if (value != null) {
-        _writeText(value.toString());
-      }
-    } else {
-      throw new UnimplementedError("_renderBasicNode $node");
+  Future _renderVariableNode(VariableNode node) async {
+    var value = await getVariableValue(node);
+    if (value != null) {
+      _writeText(value.toString());
     }
   }
 
@@ -262,11 +180,6 @@ class Renderer {
 
   Future<String> renderNodes(List<ParserNode> nodes) async {
     await _renderNodes(nodes);
-    // need line flush?
-    if (currentLineBuffer.length > 0) {
-      currentNodeIndex--;
-      _flushLine();
-    }
     return sb.toString();
   }
 
@@ -360,64 +273,13 @@ class Renderer {
         }
       } else if (node is PartialNode) {
         await _renderPartialNode(node);
-
-        /*
-        // Write pending space
-        int indentation = 0;
-        bool hasContentBefore = hasContentOnCurrentLine;
-        if (!hasContentBefore) {
-          _writeText('');
-          indentation = currentIndentation;
-        }
-        String template = await partialResolver(node.text);
-        if (template != null) {
-          bool endsWithLineFeed = hasLineFeed(template);
-          // reindent the template
-          // Keeping whether it has a last line
-          var sb = new StringBuffer();
-          var lines = LineSplitter.split(template).toList();
-
-          // First line don't indent
-          sb.write(lines.first);
-
-          _indent() {
-            for (int i = 0; i < indentation; i++) {
-              sb.write(' ');
-            }
-          }
-
-          // Next indent
-          if (lines.length > 1) {
-            // finish first
-            sb.writeln();
-            for (int i = 1; i < lines.length - 1; i++) {
-              _indent();
-              sb.writeln(lines[i]);
-            }
-            _indent();
-            sb.write(lines.last);
-          }
-
-          // last re-add line feed or not
-          if (endsWithLineFeed) {
-            sb.writeln();
-          }
-          template = sb.toString();
-
-          var nodes = parse(template);
-          await renderChildNodes(nodes, {}, source: template);
-
-          // to satisfy the specs, don't write a line feed is single
-          if (!hasContentBefore) {
-            skipNextLineFeed = true;
-          }
-          //}
-        }
-        */
       } else if (node is TextNode) {
         renderTextNode(node);
-      } else
-        await _renderBasicNode(node);
+      } else if (node is VariableNode) {
+        await _renderVariableNode(node);
+      } else {
+        throw new UnimplementedError("_renderNode $node");
+      }
     }
   }
 

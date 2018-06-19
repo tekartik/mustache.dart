@@ -70,8 +70,6 @@ class MustacheScannerNode extends ScannerNode {
   }
 }
 
-
-
 // Scan by line
 class Scanner extends Object with SourceMixin {
   final String source;
