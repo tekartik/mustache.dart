@@ -53,7 +53,7 @@ _defineGroupFromFile(filename, String text) {
       var expected = t['expected'];
 
       var partials = t['partials'] as Map;
-      var partial = (String name) {
+      var partial = (String name, _context) {
         if (partials == null) {
           return null;
         }

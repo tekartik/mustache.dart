@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:tekartik_mustache/src/mustache.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/parser.dart';
@@ -8,11 +7,13 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
+import 'package:dart2_constant/convert.dart' as compat;
 
 class Renderer {
   Map<String, dynamic> values;
   Renderer parent;
-  int partialDepth = 0;
+  PartialResolver partial;
+  PartialContext partialContext;
 
   List<ParserNode> nodes;
   int currentNodeIndex;
@@ -32,9 +33,6 @@ class Renderer {
   ParserNode get previousNode => getNodeAtOffset(-1);
 
   var sb = new StringBuffer();
-
-  PartialResolver partial;
-  PartialResolverWithId partialResolver;
 
   void _writeText(String text) {
     sb.write(text);
@@ -74,7 +72,7 @@ class Renderer {
         return value;
       } else {
         // escape
-        return htmlEscape.convert(value);
+        return compat.htmlEscape.convert(value);
       }
     } else if (value is Function) {
       var result = await value(key);
@@ -192,11 +190,10 @@ class Renderer {
     }
   }
 
-  Renderer nestedRenderer(String source, {int partialDepth}) {
+  Renderer nestedRenderer({PartialContext partialContext}) {
     var renderer = new Renderer()
       ..partial = partial
-      ..partialResolver = partialResolver
-      ..partialDepth = partialDepth ?? this.partialDepth
+      ..partialContext = partialContext ?? this.partialContext
       ..parent = this;
 
     return renderer;
@@ -206,9 +203,9 @@ class Renderer {
   void fromNestedRendered(Renderer renderer) {}
 
   Future renderChildNodes(List<ParserNode> nodes, Map<String, dynamic> values,
-      {String source, int partialDepth}) async {
+      {PartialContext partialContext}) async {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
-    var renderer = nestedRenderer(source, partialDepth: partialDepth)
+    var renderer = nestedRenderer(partialContext: partialContext)
       ..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
@@ -235,12 +232,9 @@ class Renderer {
         }
       }
     }
-    String template;
-    if (partialResolver != null) {
-      template = await partialResolver(node.text, partialDepth);
-    } else {
-      template = await partial(node.text);
-    }
+    var partialContext = new RendererPartialContext(this.partialContext);
+    String template = await partial(node.text, partialContext);
+
     if (template != null) {
       bool endsWithLineFeed = hasLineFeed(template);
       // reindent the template
@@ -276,8 +270,7 @@ class Renderer {
       template = sb.toString();
 
       var nodes = parse(template);
-      await renderChildNodes(nodes, {},
-          source: template, partialDepth: partialDepth + 1);
+      await renderChildNodes(nodes, {}, partialContext: partialContext);
     }
   }
 
@@ -365,3 +358,13 @@ class Renderer {
 
 bool nodeNullOrHasLineFeed(Node node) =>
     node == null || node is TextNode && (hasLineFeed(node.text));
+
+class RendererPartialContext implements PartialContext {
+  @override
+  final PartialParentContext parent;
+
+  @override
+  var userData;
+
+  RendererPartialContext(this.parent, [this.userData]);
+}

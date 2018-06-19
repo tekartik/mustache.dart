@@ -172,18 +172,21 @@ main() {
 
   group('partial', () {
     test('simple_partial', () async {
-      expect(await render('{{>partial}}', null, partial: (String _) => "value"),
+      expect(
+          await render('{{>partial}}', null,
+              partial: (String _, _ctx) => "value"),
           "value");
     });
     test('partial_var', () async {
       expect(
           await render('{{>partial}}', {"var": "value"},
-              partial: (String _) => "{{var}}"),
+              partial: (String _, _ctx) => "{{var}}"),
           "value");
     });
     test('sub_partial_var', () async {
       expect(
-          await render('{{>p1}}', {"var": "value"}, partial: (String partial) {
+          await render('{{>p1}}', {"var": "value"},
+              partial: (String partial, _) {
             switch (partial) {
               case 'p1':
                 return '{{>p2}}';
@@ -197,31 +200,38 @@ main() {
       // from spec
       // "\r\n" should be considered a newline for standalone tags.'
       expect(
-          await render('{{>p}}\r\n|', null, partial: (String _) => '>'), ">|");
+          await render('{{>p}}\r\n|', null, partial: (String _, _ctx) => '>'),
+          ">|");
     });
     test('partial_no_previous_line', () async {
       // from spec
       // Standalone tags should not require a newline to precede them.
-      expect(await render('  {{>p}}\n>', null, partial: (String _) => '>\n>'),
+      expect(
+          await render('  {{>p}}\n>', null,
+              partial: (String _, _ctx) => '>\n>'),
           "  >\n  >>");
     });
     test('partial_no_previous_line', () async {
       // from spec
       // Standalone tags should not require a newline to precede them.
-      expect(await render('  {{>p}}\n>', null, partial: (String _) => '>\n>'),
+      expect(
+          await render('  {{>p}}\n>', null,
+              partial: (String _, _ctx) => '>\n>'),
           "  >\n  >>");
     });
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
-      expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
+      expect(
+          await render('| {{>p}}\n', null, partial: (String _, _ctx) => '>\n>'),
           "| >\n>\n");
     });
 
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
-      expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
+      expect(
+          await render('| {{>p}}\n', null, partial: (String _, _ctx) => '>\n>'),
           "| >\n>\n");
     });
 
@@ -230,33 +240,36 @@ main() {
       // Whitespace should be left untouched.
       expect(
           await render(' {{data}} {{>p}}\n', {'data': '|'},
-              partial: (String _) => '>\n>'),
+              partial: (String _, _ctx) => '>\n>'),
           " | >\n>\n");
     });
     test('partial_root_depth', () async {
       expect(
           await render('{{>partial}}', null,
-              partialResolver: (String name, int depth) {
+              partial: (String name, PartialContext context) {
             expect(name, "partial");
-            expect(depth, 0);
+            expect(context.userData, null);
+            expect(context.parent.userData, 1);
             return "value";
-          }),
+          }, partialContext: new PartialContext(1)),
           "value");
     });
 
     test('partial_sub_depth', () async {
       expect(
           await render('{{>p1}}', null,
-              partialResolver: (String name, int depth) {
+              partial: (String name, PartialContext context) {
             if (name == "p1") {
-              expect(depth, 0);
+              expect(context.parent.userData, 1);
+              context.userData = 2;
               return "{{>p2}}";
             } else {
               expect(name, "p2");
-              expect(depth, 1);
+              expect(context.parent.userData, 2);
+              expect(context.parent.parent.userData, 1);
               return "value";
             }
-          }),
+          }, partialContext: new PartialContext(1)),
           "value");
     });
 

@@ -7,24 +7,17 @@ class MustacheFs {
 
   MustacheFs(this.fs);
 
-  // current path stack
-  List<String> paths = [];
-
   Future<String> renderFile(String path, Map<String, dynamic> values) async {
     var source = await fs.file(path).readAsString();
 
     // init our stack
-    paths = [path];
 
     return await render(source, values,
-        partialResolver: (String partial, int depth) async {
+        partialContext: new PartialContext(path),
+        partial: (String partial, PartialContext context) async {
       var path = partial;
 
-      // Truncate current stack at the given depth
-      if (depth + 1 < paths.length) {
-        paths = paths.sublist(0, depth + 1);
-      }
-      var contextPath = paths.last;
+      var contextPath = context.parent.userData as String;
 
       var ctx = fs.pathContext;
       // try to resolve from current file
@@ -32,8 +25,8 @@ class MustacheFs {
       if (ctx.isRelative(path)) {
         path = ctx.normalize(ctx.join(ctx.dirname(contextPath), path));
       }
-      // add current path to the stack
-      paths.add(path);
+      // set current path to the context
+      context.userData = path;
 
       var content = await fs.file(path).readAsString();
       return content;
