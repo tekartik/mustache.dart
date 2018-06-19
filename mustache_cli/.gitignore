@@ -15,4 +15,10 @@ packages
 # Include when developing application packages.
 pubspec.lock
 
+# Intellij
 .idea/
+*.iml
+
+
+# example output
+/example/out.html

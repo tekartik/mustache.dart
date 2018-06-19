@@ -13,13 +13,13 @@ fsTest(FileSystem fs) {
   group('basic', () {
     test('one_file', () async {
       await fs.file("test").writeAsString("content");
-      expect(await renderFile(fs, "test", null), "content");
+      expect(await renderFile(fs, "test"), "content");
     });
 
     test('include_one_file', () async {
       await fs.file("test").writeAsString("{{> other}}");
       await fs.file("other").writeAsString("content");
-      expect(await renderFile(fs, "test", null), "content");
+      expect(await renderFile(fs, "test"), "content");
     });
 
     test('include_relative_file', () async {
@@ -27,7 +27,7 @@ fsTest(FileSystem fs) {
       await fs.file("test").writeAsString("{{> ${subFilePath} }}");
       await fs.directory(path.dirname(subFilePath)).create();
       await fs.file(subFilePath).writeAsString("content");
-      expect(await renderFile(fs, "test", null), "content");
+      expect(await renderFile(fs, "test"), "content");
     });
 
     test('include_from_sub_dir_relative_file', () async {
@@ -37,7 +37,7 @@ fsTest(FileSystem fs) {
       await sub.create();
       await file.writeAsString("{{> other }}");
       await other.writeAsString("content");
-      expect(await renderFile(fs, file.path, null), "content");
+      expect(await renderFile(fs, file.path), "content");
     });
 
     test('nested_relative_file', () async {
@@ -51,7 +51,7 @@ fsTest(FileSystem fs) {
       await file2.writeAsString(
           "{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}");
       await file3.writeAsString("content");
-      expect(await renderFile(fs, file1.path, null), "content");
+      expect(await renderFile(fs, file1.path), "content");
     });
 
     test('nested_relative_file_twice', () async {
@@ -65,7 +65,7 @@ fsTest(FileSystem fs) {
       await file2.writeAsString(
           "{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}");
       await file3.writeAsString("content");
-      expect(await renderFile(fs, file1.path, null), "content content");
+      expect(await renderFile(fs, file1.path), "content content");
     });
   });
 }
