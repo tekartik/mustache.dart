@@ -1,15 +1,18 @@
 import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:test/test.dart';
 
+// Mustache node
+ScannerNode mn(String text) => new MustacheScannerNode(text);
+ScannerNode tn(String text) => new TextScannerNode(text);
+
 main() {
   group('scanner', () {
     group('node', () {
       test('equals', () {
-        expect(new TextScannerNode("text"), new TextScannerNode("text"));
-        expect(new TextScannerNode(null), new TextScannerNode(null));
-        expect(new TextScannerNode(null), isNot(new TextScannerNode("text")));
-        expect(
-            new TextScannerNode("other"), isNot(new TextScannerNode("text")));
+        expect(tn("text"), tn("text"));
+        expect(tn(null), tn(null));
+        expect(tn(null), isNot(tn("text")));
+        expect(tn("other"), isNot(tn("text")));
       });
     });
     group('basic', () {
@@ -19,29 +22,27 @@ main() {
       });
 
       test('text_node', () async {
-        expect(scan(" "), [new TextScannerNode(" ")]);
-        expect(scan(" {{"), [new TextScannerNode(" ")]);
+        expect(scan(" "), [tn(" ")]);
+        expect(scan(" {{"), [tn(" ")]);
         expect(scan("{{}}"), []);
         expect(scan("{{ }}"), []);
       });
 
       test('mustache_node', () async {
-        expect(scan("{{a}}"), [new MustacheScannerNode("a")]);
-        expect(scan("{{a"), [new MustacheScannerNode("a")]);
-        expect(scan("{{ a }}"), [new MustacheScannerNode("a")]);
+        expect(scan("{{a}}"), [mn("a")]);
+        expect(scan("{{a"), [mn("a")]);
+        expect(scan("{{ a }}"), [mn("a")]);
       });
 
       test('no_escape_mustache_node', () async {
-        expect(scan("{{{ }}}"), [new MustacheScannerNode("{ }")]);
-        expect(scan("{{{ }}"), [new MustacheScannerNode("{ }}")]);
-        expect(scan("{{{ a }}}"), [new MustacheScannerNode("{ a }")]);
+        expect(scan("{{{ }}}"), [mn("{ }")]);
+        expect(scan("{{{ }}"), [mn("{ }}")]);
+        expect(scan("{{{ a }}}"), [mn("{ a }")]);
       });
 
       test('mix_node', () async {
-        expect(scan(" {{a}}"),
-            [new TextScannerNode(" "), new MustacheScannerNode("a")]);
-        expect(scan("{{a}} "),
-            [new MustacheScannerNode("a"), new TextScannerNode(" ")]);
+        expect(scan(" {{a}}"), [tn(" "), mn("a")]);
+        expect(scan("{{a}} "), [mn("a"), tn(" ")]);
       });
 
       /*
@@ -63,14 +64,12 @@ main() {
 
     group('lines', () {
       test('nl', () async {
-        expect(await scan("\n"), [new TextScannerNode("\n")]);
-        expect(await scan("\n\n"),
-            [new TextScannerNode("\n"), new TextScannerNode("\n")]);
+        expect(await scan("\n"), [tn("\n")]);
+        expect(await scan("\n\n"), [tn("\n"), tn("\n")]);
       });
       test('crnl', () async {
-        expect(await scan("\r\n"), [new TextScannerNode("\r\n")]);
-        expect(await scan("\r\n\r\n"),
-            [new TextScannerNode("\r\n"), new TextScannerNode("\r\n")]);
+        expect(await scan("\r\n"), [tn("\r\n")]);
+        expect(await scan("\r\n\r\n"), [tn("\r\n"), tn("\r\n")]);
       });
     });
 
@@ -83,8 +82,18 @@ main() {
         expect(scanner.delimiter.isDefault, false);
       });
       test('new_delimiter_node', () async {
-        expect(
-            await scan('{{=[ ]=}}[nodex]'), [new MustacheScannerNode("nodex")]);
+        expect(await scan('{{=[ ]=}}[nodex]'), [mn("=[ ]="), mn("nodex")]);
+      });
+      test('new_delimiter_section', () async {
+        expect(await scan('{{=| |=}} |#s| |data| |/s|'), [
+          mn('=| |='),
+          tn(' '),
+          mn('#s'),
+          tn(' '),
+          mn('data'),
+          tn(' '),
+          mn('/s')
+        ]);
       });
     });
   });

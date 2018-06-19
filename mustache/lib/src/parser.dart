@@ -83,6 +83,17 @@ class Phase1Parser {
               addNode(new PartialNode(text));
             }
             break;
+          case '=':
+            var lastChar = text.substring(text.length - 1);
+            if (lastChar == '}') {
+              text = text.substring(1, text.length - 1);
+            } else {
+              text = text.substring(1);
+            }
+            if (_trim(0)) {
+              addNode(new DelimitersNode(text));
+            }
+            break;
 
           default:
             if (_trim(0)) {
@@ -247,55 +258,19 @@ abstract class ParserNode extends Node {
 
 class VariableNode extends ParserNode {
   VariableNode(String text) : super(text);
-
-  @override
-  int get hashCode => super.hashCode;
-
   String get name => text;
-
-  @override
-  bool operator ==(other) {
-    return other is VariableNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "Variable ${super.toString()}";
-  }
 }
 
 class NoEscapeVariableNode extends VariableNode {
   NoEscapeVariableNode(String text) : super(text);
-
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is NoEscapeVariableNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "NoEscapeVariable ${super.toString()}";
-  }
 }
 
 class CommentNode extends ParserNode {
   CommentNode(String text) : super(text);
+}
 
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is CommentNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "Comment ${text}";
-  }
+class DelimitersNode extends CommentNode {
+  DelimitersNode(String text) : super(text);
 }
 
 class TextNode extends ParserNode {

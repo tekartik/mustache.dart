@@ -13,7 +13,8 @@ main() {
     'sections',
     'inverted',
     'comments',
-    'partials'
+    'partials',
+    'delimiters',
   ];
   _.main();
 }

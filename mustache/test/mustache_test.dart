@@ -26,6 +26,9 @@ main() {
   });
 
   group('lines', () {
+    test('empty_line', () async {
+      expect(await render("\n", null), "\n");
+    });
     test('empty_lines', () async {
       expect(await render("\n\n", null), "\n\n");
     });
@@ -39,6 +42,14 @@ main() {
     });
   });
   group('variable', () {
+    test('missing_variable', () async {
+      expect(await render("{{var}}", {"var": null}), "");
+      expect(await render("{{var}}", null), "");
+    });
+    test('missing_var_standalone', () async {
+      // variable cannot be standalone
+      expect(await render("{{var}}\n", null), "\n");
+    });
     test('escape', () async {
       expect(await render("{{var}}", {"var": "&"}), "&amp;");
     });

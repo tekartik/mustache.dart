@@ -1,3 +1,4 @@
+// Node must match exact class
 abstract class Node {
   final String text;
 
@@ -8,7 +9,7 @@ abstract class Node {
 
   @override
   bool operator ==(other) {
-    if (other is Node) {
+    if (other.runtimeType == runtimeType) {
       return other.text == text;
     }
     return false;
@@ -16,6 +17,6 @@ abstract class Node {
 
   @override
   String toString() {
-    return '$text';
+    return '$runtimeType: $text';
   }
 }

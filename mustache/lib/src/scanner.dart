@@ -38,36 +38,10 @@ abstract class ScannerNode extends Node {
 
 class TextScannerNode extends ScannerNode {
   TextScannerNode(String text) : super(text);
-
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is TextScannerNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "TextScanner ${super.toString()}";
-  }
 }
 
 class MustacheScannerNode extends ScannerNode {
   MustacheScannerNode(String text) : super(text);
-
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is MustacheScannerNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "Mustache ${super.toString()}";
-  }
 }
 
 // Scan by line
@@ -231,8 +205,9 @@ class Scanner extends Object with SourceMixin {
       var closeDelimiter = sb.toString();
       delimiter = new ScannerDelimiter(openDelimiter, closeDelimiter);
 
+      // 2018-06-19 keep it doe handling standalone later
       // Skip it from result
-      return null;
+      // return null;
     }
     return new MustacheScannerNode(getSourceText(start, end));
   }

@@ -71,6 +71,15 @@ main() {
         expect(parse(" {{a}}"), [new TextNode(" "), new VariableNode("a")]);
       });
     });
+
+    group('delimiter', () {
+      test('standalone', () {
+        expect(parse("{{=[ ]=}}"), []);
+      });
+      test('standlone_new_line', () {
+        expect(parse("{{=[ ]=}}\n"), []);
+      });
+    });
     group('sections', () {
       test('section_space_before', () async {
         expect(parse(' {{#s}}{{/s}}'),
