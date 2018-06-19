@@ -273,6 +273,18 @@ main() {
           }),
           "value");
     });
+
+    test('lambda_raw_section', () async {
+      expect(
+          await render("{{#f}}{{x}}{{/f}}", {
+            "f": (String name) {
+              // expected name
+              expect(name, "{{x}}");
+              return "value";
+            }
+          }),
+          "value");
+    });
   });
 
   group('delimiters', () {

@@ -3,7 +3,7 @@ library tekartik_mustache.supported_spec_test;
 
 import 'package:test/test.dart';
 
-import 'spec_test.dart' as _;
+import 'run_spec.dart' as _;
 
 main() {
   _.skipAll = false;
@@ -15,6 +15,7 @@ main() {
     'comments',
     'partials',
     'delimiters',
+    'lambdas',
   ];
   _.main();
 }

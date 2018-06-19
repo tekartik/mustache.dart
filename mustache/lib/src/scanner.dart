@@ -40,16 +40,26 @@ class TextScannerNode extends ScannerNode {
   TextScannerNode(String text) : super(text);
 }
 
-class MustacheScannerNode extends ScannerNode with SourceMixin {
+class MustacheScannerNode extends ScannerNode
+    with SourceMixin
+    implements SourceContent {
+  @override
   final String source;
+  @override
   final int start;
+  @override
   final int end;
-  MustacheScannerNode(this.source, this.start, this.end)
-      : super(sourceGetText(source, start, end));
+
+  final ScannerDelimiter delimiter;
+
+  MustacheScannerNode(
+      this.source, this.start, this.end, this.delimiter, String text)
+      : super(text);
   MustacheScannerNode.withText(String text)
       : source = null,
         start = null,
         end = null,
+        delimiter = null,
         super(text);
 }
 
@@ -59,6 +69,8 @@ class Scanner extends Object with SourceMixin {
 
   Scanner(this.source) : end = source.length;
 
+  // set before the opening delimited
+  int outerStart;
   int index = 0;
   final int end;
   ScannerDelimiter delimiter = new DefaultScannerDelimiter();
@@ -106,6 +118,7 @@ class Scanner extends Object with SourceMixin {
     if (nlEnd != -1) {
       if (end == -1 || nlEnd < end) {
         index = start + nlEnd + nlLength;
+        outerStart = index;
         return new TextScannerNode(getSourceText(start, index));
       }
     }
@@ -113,6 +126,7 @@ class Scanner extends Object with SourceMixin {
     if (end == -1) {
       end = this.end;
       index = end;
+      outerStart = index;
     } else {
       // Found!
       atOpenDelimiter = true;
@@ -120,7 +134,8 @@ class Scanner extends Object with SourceMixin {
       // Trim whitespaces
 
       end += start;
-      index = end + delimiter.open.length;
+      outerStart = end;
+      index = outerStart + delimiter.open.length;
 
       if (end == start) {
         return null;
@@ -218,7 +233,10 @@ class Scanner extends Object with SourceMixin {
       // Skip it from result
       // return null;
     }
-    return new MustacheScannerNode(source, start, end);
+
+    // index is the outer end
+    return new MustacheScannerNode(source, outerStart, index, delimiter,
+        sourceGetText(source, start, end));
   }
 
   final List<ScannerNode> nodes = [];

@@ -1,1 +1,1 @@
-export 'src/renderer.dart' show render, PartialResolver;
+export 'src/mustache.dart' show render, PartialResolver, Lambda;

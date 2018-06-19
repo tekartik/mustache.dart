@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/scanner.dart';
+import 'package:tekartik_mustache/src/source.dart';
 import 'import.dart';
 
 class RootSection extends Section {
@@ -11,19 +12,21 @@ class RootSection extends Section {
 
 /// parse [ScannerNode] as [ParserNode]
 class Phase1Parser {
-  final String source;
   final List<ParserNode> nodes = [];
 
-  Phase1Parser(this.source);
+  Phase1Parser();
 
   void addNode(ParserNode node) {
     nodes.add(node);
   }
 
   // convert scanner node to parse node
-  void parse() {
+  void parse(String source) {
     var scannerNodes = scan(source);
+    parseScannerNodes(scannerNodes);
+  }
 
+  void parseScannerNodes(List<ScannerNode> scannerNodes) {
     // standalone status
     for (var scannerNode in scannerNodes) {
       if (scannerNode is TextScannerNode) {
@@ -47,17 +50,20 @@ class Phase1Parser {
             break;
           case '#':
             if (_trim(1)) {
-              addNode(new SectionStartNode(text));
+              addNode(new SectionStartNode(
+                  scannerNode.delimiter, scannerNode, text));
             }
             break;
           case '^':
             if (_trim(1)) {
-              addNode(new SectionStartNode(text, inverted: true));
+              addNode(new SectionStartNode(
+                  scannerNode.delimiter, scannerNode, text,
+                  inverted: true));
             }
             break;
           case '/':
             if (_trim(1)) {
-              addNode(new SectionEndNode(text));
+              addNode(new SectionEndNode(scannerNode, text));
             }
             break;
           case '{':
@@ -118,7 +124,7 @@ class Section {
 
   Section(SectionStartNode startNode) {
     node = new SectionNode(new VariableNode(startNode.text),
-        inverted: startNode.inverted);
+        startNode: startNode, inverted: startNode.inverted);
   }
 
   VariableNode get variable => node.variable;
@@ -223,6 +229,15 @@ class Phase3Parser {
       section.add(node);
     }
 
+    _endSection(int index, SectionEndNode endNode) {
+      // truncate of the first found
+      for (int i = sections.length - 1; i >= index; i--) {
+        var section = sections[i];
+        section.node.endNode = endNode;
+      }
+      sections = sections.sublist(0, index);
+    }
+
     for (int i = 0; i < sourceNodes.length; i++) {
       var node = sourceNodes[i];
       if (node is SectionStartNode) {
@@ -238,8 +253,7 @@ class Phase3Parser {
         for (int i = sections.length - 1; i > 0; i--) {
           var section = sections[i];
           if (section.variable.name == variable) {
-            // truncate of the first found
-            sections = sections.sublist(0, i);
+            _endSection(i, node);
             break;
           }
         }
@@ -275,29 +289,19 @@ class DelimitersNode extends CommentNode {
 
 class TextNode extends ParserNode {
   TextNode(String text) : super(text);
-
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is TextNode && super == (other);
-  }
-
-  @override
-  String toString() {
-    return "Text ${super.toString()}";
-  }
 }
 
 class SectionNode extends ParserNode {
+  SourceContent innerContent;
   final VariableNode variable;
+  final SectionStartNode startNode;
+  SectionEndNode endNode;
   final bool inverted;
   final List<ParserNode> nodes = [];
 
   String get key => variable.name;
 
-  SectionNode(this.variable, {this.inverted}) : super(null);
+  SectionNode(this.variable, {this.startNode, this.inverted}) : super(null);
 
   void add(ParserNode node) {
     nodes.add(node);
@@ -324,47 +328,44 @@ class SectionNode extends ParserNode {
   }
 }
 
-class SectionStartNode extends ParserNode {
-  final bool inverted;
+class SectionDelimiterNode extends ParserNode {
+  final SourceContent sourceContent;
 
-  SectionStartNode(String text, {this.inverted}) : super(text);
+  SectionDelimiterNode(this.sourceContent, String text) : super(text);
 }
 
-class SectionEndNode extends ParserNode {
-  SectionEndNode(String text) : super(text);
+class SectionStartNode extends SectionDelimiterNode {
+  final ScannerDelimiter delimiter;
+  final bool inverted;
 
-  @override
-  int get hashCode => super.hashCode;
+  SectionStartNode(this.delimiter, SourceContent source, String text,
+      {this.inverted})
+      : super(source, text);
+}
 
-  @override
-  bool operator ==(other) {
-    return other is SectionEndNode && super == (other);
-  }
+class SectionEndNode extends SectionDelimiterNode {
+  SectionEndNode(SourceContent source, String text) : super(source, text);
 }
 
 class PartialNode extends ParserNode {
   PartialNode(String text) : super(text);
+}
 
-  @override
-  int get hashCode => super.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return other is PartialNode && super == (other);
+List<ParserNode> parseScannerNodePhase1(List<ScannerNode> scannerNodes) {
+  if (scannerNodes == null) {
+    return null;
   }
-
-  @override
-  String toString() {
-    return "Partial ${super.toString()}";
-  }
+  var source = new Phase1Parser();
+  source.parseScannerNodes(scannerNodes);
+  return source.nodes;
 }
 
 List<ParserNode> parsePhase1(String text) {
   if (text == null) {
     return null;
   }
-  var source = new Phase1Parser(text);
-  source.parse();
+  var source = new Phase1Parser();
+  source.parse(text);
   return source.nodes;
 }
 
@@ -390,3 +391,6 @@ List<ParserNode> parseNodesPhase3(List<ParserNode> nodes) {
 }
 
 List<ParserNode> parse(String text) => parseNodesPhase3(parsePhase2(text));
+
+List<ParserNode> parseScannerNodes(List<ScannerNode> scannerNodes) =>
+    parseNodesPhase3(parseNodesPhase2(parseScannerNodePhase1(scannerNodes)));

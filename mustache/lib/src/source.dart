@@ -28,3 +28,22 @@ abstract class SourceMixin {
 String sourceGetText(String source, int start, int end) {
   return source.substring(start, end);
 }
+
+abstract class SourceContent {
+  factory SourceContent(String source, int start, int end) =>
+      new _SourceContent(source, start, end);
+  String get source;
+  int get start;
+  int get end;
+}
+
+class _SourceContent implements SourceContent {
+  @override
+  final String source;
+  @override
+  final int start;
+  @override
+  final int end;
+
+  _SourceContent(this.source, this.start, this.end);
+}

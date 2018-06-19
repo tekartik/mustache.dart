@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:tekartik_mustache/src/mustache.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/parser.dart';
+import 'package:tekartik_mustache/src/scanner.dart';
+import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
 
 class Renderer {
-  final String source;
   Map<String, dynamic> values;
   Renderer parent;
 
@@ -27,8 +29,6 @@ class Renderer {
   ParserNode get nextNode => getNodeAtOffset(1);
 
   ParserNode get previousNode => getNodeAtOffset(-1);
-
-  Renderer(this.source);
 
   var sb = new StringBuffer();
 
@@ -75,12 +75,14 @@ class Renderer {
         return htmlEscape.convert(value);
       }
     } else if (value is Function) {
-      var result = await value(key) as String;
-      if (result != null) {
-        var renderer = new Renderer(result)
+      var result = await value(key);
+      if (result is bool) {
+        throw "TODO";
+      } else if (result is String) {
+        var renderer = new Renderer()
           ..values = values
           ..partialResolver = partialResolver;
-        result = await renderer.render();
+        result = await renderer.render(result as String);
         // escape
         result = await fixValue(node, key, result) as String;
       }
@@ -189,7 +191,7 @@ class Renderer {
   }
 
   Renderer nestedRenderer(String source) {
-    var renderer = new Renderer(source ?? this.source)
+    var renderer = new Renderer()
       ..partialResolver = partialResolver
       ..parent = this;
 
@@ -281,13 +283,25 @@ class Renderer {
 
         if (value is Function) {
           // section lambda
-          key = "inner";
-          var result = await fixValue(node.variable, key, value) as String;
-          _writeText(result);
-          /*
-          var nodes = parse(template);
-          await renderChildNodes(nodes, {}, source: template);
-          */
+          // get the inner content as is
+          int keyStart = node.startNode.sourceContent.end;
+          int keyEnd = node.endNode.sourceContent.start;
+          key = sourceGetText(
+              node.startNode.sourceContent.source, keyStart, keyEnd);
+
+          // call the function
+          var result = await value(key);
+
+          if (result is String) {
+            // parse it
+            var scanner = new Scanner(result)
+              ..delimiter = node.startNode.delimiter;
+            scanner.scan();
+
+            var parserNodes = parseScannerNodes(scanner.nodes);
+            await renderChildNodes(parserNodes, values);
+          }
+          continue;
         } else {
           value = await fixValue(node.variable, node.key, value);
         }
@@ -314,7 +328,6 @@ class Renderer {
               }
               await renderChildNodes(node.nodes, values);
             }
-          } else if (value is Function) {
           } else {
             throw new UnsupportedError(
                 "value $value (${value.runtimeType}) node $node");
@@ -332,27 +345,12 @@ class Renderer {
     }
   }
 
-  Future<String> render() async {
+  Future<String> render(String source) async {
     values ??= {};
     var nodes = parse(source);
     return await renderNodes(nodes);
   }
 }
-
-/// The main entry point
-Future<String> render(String source, Map<String, dynamic> values,
-    {PartialResolver partial}) async {
-  if (source == null) {
-    return null;
-  }
-  var renderer = new Renderer(source)
-    ..values = values
-    ..partialResolver = partial;
-  return await renderer.render();
-}
-
-typedef FutureOr<String> PartialResolver(String name);
-typedef FutureOr<String> Lambda(String name);
 
 bool nodeNullOrHasLineFeed(Node node) =>
     node == null || node is TextNode && (hasLineFeed(node.text));
