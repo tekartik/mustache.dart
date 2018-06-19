@@ -12,6 +12,7 @@ import 'import.dart';
 class Renderer {
   Map<String, dynamic> values;
   Renderer parent;
+  int partialDepth = 0;
 
   List<ParserNode> nodes;
   int currentNodeIndex;
@@ -32,7 +33,8 @@ class Renderer {
 
   var sb = new StringBuffer();
 
-  PartialResolver partialResolver;
+  PartialResolver partial;
+  PartialResolverWithId partialResolver;
 
   void _writeText(String text) {
     sb.write(text);
@@ -81,7 +83,7 @@ class Renderer {
       } else if (result is String) {
         var renderer = new Renderer()
           ..values = values
-          ..partialResolver = partialResolver;
+          ..partial = partial;
         result = await renderer.render(result as String);
         // escape
         result = await fixValue(node, key, result) as String;
@@ -190,9 +192,11 @@ class Renderer {
     }
   }
 
-  Renderer nestedRenderer(String source) {
+  Renderer nestedRenderer(String source, {int partialDepth}) {
     var renderer = new Renderer()
+      ..partial = partial
       ..partialResolver = partialResolver
+      ..partialDepth = partialDepth ?? this.partialDepth
       ..parent = this;
 
     return renderer;
@@ -202,9 +206,10 @@ class Renderer {
   void fromNestedRendered(Renderer renderer) {}
 
   Future renderChildNodes(List<ParserNode> nodes, Map<String, dynamic> values,
-      {String source}) async {
+      {String source, int partialDepth}) async {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
-    var renderer = nestedRenderer(source)..values = values;
+    var renderer = nestedRenderer(source, partialDepth: partialDepth)
+      ..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
     if (subResult.length > 0) {
@@ -230,7 +235,12 @@ class Renderer {
         }
       }
     }
-    String template = await partialResolver(node.text);
+    String template;
+    if (partialResolver != null) {
+      template = await partialResolver(node.text, partialDepth);
+    } else {
+      template = await partial(node.text);
+    }
     if (template != null) {
       bool endsWithLineFeed = hasLineFeed(template);
       // reindent the template
@@ -266,7 +276,8 @@ class Renderer {
       template = sb.toString();
 
       var nodes = parse(template);
-      await renderChildNodes(nodes, {}, source: template);
+      await renderChildNodes(nodes, {},
+          source: template, partialDepth: partialDepth + 1);
     }
   }
 

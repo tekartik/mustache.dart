@@ -233,6 +233,32 @@ main() {
               partial: (String _) => '>\n>'),
           " | >\n>\n");
     });
+    test('partial_root_depth', () async {
+      expect(
+          await render('{{>partial}}', null,
+              partialResolver: (String name, int depth) {
+            expect(name, "partial");
+            expect(depth, 0);
+            return "value";
+          }),
+          "value");
+    });
+
+    test('partial_sub_depth', () async {
+      expect(
+          await render('{{>p1}}', null,
+              partialResolver: (String name, int depth) {
+            if (name == "p1") {
+              expect(depth, 0);
+              return "{{>p2}}";
+            } else {
+              expect(name, "p2");
+              expect(depth, 1);
+              return "value";
+            }
+          }),
+          "value");
+    });
 
     /*
     - name: Inline Indentation

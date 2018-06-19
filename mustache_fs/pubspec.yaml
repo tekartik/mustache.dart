@@ -1,0 +1,20 @@
+name: tekartik_mustache_fs
+version: 0.1.0
+description: Mustache and fs together
+environment:
+  sdk: '>=1.24.3 <2.0.0'
+
+dependencies:
+  fs_shim: '>=0.8.1'
+  tekartik_mustache:
+    git:
+      url: git@gitlab.com:tekartik/mustache.dart.git
+      path: mustache
+
+dev_dependencies:
+  test: any
+  yaml: any
+
+dependency_overrides:
+  tekartik_mustache:
+    path: ../mustache
