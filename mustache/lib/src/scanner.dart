@@ -1,15 +1,13 @@
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/source.dart';
 
+import 'import.dart';
+
 String openDelimiterDefault = "{{";
 String closeDelimiterDefault = "}}";
 
 String noEscapeDelimiter = "{";
 int noEscapeDelimiterLength = noEscapeDelimiter.length;
-
-String nl = '\n';
-int nlLength = nl.length;
-String crnl = '\r\n';
 
 var defaultNoEscapeDelimiterRegExp = new RegExp("\{");
 var defaultNoEscapeCloseDelimiterRegExp = new RegExp("\}\}\}");
@@ -72,14 +70,7 @@ class MustacheScannerNode extends ScannerNode {
   }
 }
 
-// Only handle space and tab
-bool isInlineWhitespace(String chr) {
-  return chr == ' ' || chr == '\t';
-}
 
-bool isWhitespace(String chr) {
-  return chr == '\r' || chr == '\n' || isInlineWhitespace(chr);
-}
 
 // Scan by line
 class Scanner extends Object with SourceMixin {

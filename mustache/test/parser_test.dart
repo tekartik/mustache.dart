@@ -34,9 +34,10 @@ main() {
       });
 
       test('comment_node', () {
-        expect(parse("{{!c}}"), [new CommentNode("c")]);
-        expect(parse("{{!c"), [new CommentNode("c")]);
-        expect(parse("{{!"), []);
+        expect(parsePhase1("{{!c}}"), [new CommentNode("c")]);
+        expect(parsePhase1("{{!c"), [new CommentNode("c")]);
+        expect(parsePhase1("{{!"), []);
+        expect(parsePhase2("{{!c}}"), []);
       });
 
       test('section_node', () async {
@@ -71,11 +72,33 @@ main() {
       });
     });
     group('sections', () {
+      test('section_space_before', () async {
+        expect(parse(' {{#s}}{{/s}}'),
+            [new TextNode(" "), new SectionNode(new VariableNode("s"))]);
+      });
       test('inner_section', () async {
         expect(parse("{{#s1}}{{#s2}}{{/s2{{/s1}}"), [
           new SectionNode(new VariableNode("s1"))
             ..nodes.add(new SectionNode(new VariableNode("s2")))
         ]);
+      });
+      test('space_line_feed_inner', () async {
+        expect(parse('{{#s}} \n{{/s}}'), [
+          new SectionNode(new VariableNode("s"))..nodes.add(new TextNode(" \n"))
+        ]);
+      });
+    });
+
+    group('comment', () {
+      test('no_single_on_line', () async {
+        expect(
+            parse("a{{!comment}}\n"), [new TextNode("a"), new TextNode("\n")]);
+      });
+    });
+
+    group('partial', () {
+      test('partial_node_standalone', () {
+        expect(parse("{{>c}}\n"), [new PartialNode("c")]);
       });
     });
   });

@@ -1,6 +1,4 @@
-import 'package:tekartik_mustache/src/node.dart';
-import 'package:tekartik_mustache/src/parser.dart';
-import 'package:tekartik_mustache/src/scanner.dart';
+import 'import.dart';
 
 abstract class SourceMixin {
   String get source;

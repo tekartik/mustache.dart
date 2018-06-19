@@ -3,28 +3,36 @@ import 'dart:convert';
 
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/parser.dart';
-import 'package:tekartik_mustache/src/scanner.dart';
-import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
 
-class Renderer extends Object with SourceMixin {
+class Renderer {
   final String source;
   Map<String, dynamic> values;
   Renderer parent;
+
+  List<ParserNode> nodes;
+  int currentNodeIndex;
+
+  ParserNode getNodeAtOffset(int offset) {
+    int index = currentNodeIndex + offset;
+    if (index >= 0 && index < nodes.length) {
+      return nodes[index];
+    }
+    return null;
+  }
+
+  ParserNode get currentNode => nodes[currentNodeIndex];
+
+  ParserNode get nextNode => getNodeAtOffset(1);
+
+  ParserNode get previousNode => getNodeAtOffset(-1);
 
   Renderer(this.source);
 
   var sb = new StringBuffer();
 
-  // no end line
-  TextNode pendingWhiteSpaceNode;
-
-  bool hasContentOnCurrentLine = false;
-  bool hasTemplateOnCurrentLine = false;
   PartialResolver partialResolver;
-  int currentIndentation = 0;
-  bool skipNextLineFeed = false;
 
   /*
   _writeNode(ParserNode node, String text) {
@@ -33,25 +41,38 @@ class Renderer extends Object with SourceMixin {
   }
   */
 
-  _doWriteText(String text) {
-    sb.write(text);
-    if (hasLineFeed(text)) {
-      skipNextLineFeed = false;
-      hasContentOnCurrentLine = false;
-      hasTemplateOnCurrentLine = false;
-      currentIndentation = 0;
-    } else {
-      currentIndentation += text.length;
-      hasContentOnCurrentLine = hasContentOnCurrentLine || text.length > 0;
-    }
+  void _writeText(String text) {
+    currentLineBuffer.write(text);
   }
 
-  _writeText(String text) {
-    if (pendingWhiteSpaceNode != null) {
-      _doWriteText(pendingWhiteSpaceNode.text);
-      pendingWhiteSpaceNode = null;
+  void _flushLine() {
+    // Look for every node in this line
+    bool hasStandaloneTag = false;
+    for (int i = currentNodeIndex; i >= 0; i--) {
+      var node = nodes[i];
+      if (node is TextNode) {
+        if (!isWhitespaces(node.text)) {
+          hasStandaloneTag = false;
+          break;
+        }
+      } else if (node is CommentNode ||
+          node is SectionStartNode ||
+          node is SectionEndNode) {
+        if (hasStandaloneTag) {
+          hasStandaloneTag = false;
+          break;
+        } else {
+          hasStandaloneTag = true;
+        }
+      }
     }
-    _doWriteText(text);
+
+    if (hasStandaloneTag) {
+      // skip
+    } else {
+      sb.write(currentLineBuffer.toString());
+      currentLineBuffer = new StringBuffer();
+    }
   }
 
   Future getVariableValue(VariableNode variable, {bool recursive: true}) async {
@@ -160,6 +181,16 @@ class Renderer extends Object with SourceMixin {
     return values[key];
   }
 
+  var currentLineBuffer = new StringBuffer();
+
+  void renderTextNode(TextNode node) {
+    var text = node.text;
+    _writeText(text);
+    if (hasLineFeed(text) || nextNode == null) {
+      _flushLine();
+    }
+  }
+
   _renderBasicNode(ParserNode node) async {
     //var previousNode = this.previousNode;
     // this.previousNode = node;
@@ -168,12 +199,15 @@ class Renderer extends Object with SourceMixin {
     if (node is TextNode) {
       bool whitespacesOnly = isWhitespaces(text);
       if (!text.endsWith(nl) && whitespacesOnly) {
+        /*
         // Write existing pending one first
         if (pendingWhiteSpaceNode != null) {
           _writeText("");
         }
         pendingWhiteSpaceNode = node;
+        */
       } else {
+        /*
         // We we know that we have either content or ending with a lf
         // line feed only?
         if (isLineFeed(text)) {
@@ -190,6 +224,7 @@ class Renderer extends Object with SourceMixin {
             //}
           }
         }
+        */
 
         _writeText(text);
       }
@@ -197,11 +232,6 @@ class Renderer extends Object with SourceMixin {
       var value = await getVariableValue(node);
       if (value != null) {
         _writeText(value.toString());
-      }
-    } else if (node is CommentNode) {
-      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
-        //ok ignore
-        pendingWhiteSpaceNode = null;
       }
     } else {
       throw new UnimplementedError("_renderBasicNode $node");
@@ -211,19 +241,13 @@ class Renderer extends Object with SourceMixin {
   Renderer nestedRenderer(String source) {
     var renderer = new Renderer(source ?? this.source)
       ..partialResolver = partialResolver
-      ..hasTemplateOnCurrentLine = true
-      ..pendingWhiteSpaceNode = pendingWhiteSpaceNode
-      ..hasContentOnCurrentLine = hasContentOnCurrentLine
       ..parent = this;
 
     return renderer;
   }
 
   // when returning
-  void fromNestedRendered(Renderer renderer) {
-    hasContentOnCurrentLine = renderer.hasContentOnCurrentLine;
-    hasTemplateOnCurrentLine = renderer.hasTemplateOnCurrentLine;
-  }
+  void fromNestedRendered(Renderer renderer) {}
 
   Future renderChildNodes(List<ParserNode> nodes, Map<String, dynamic> values,
       {String source}) async {
@@ -231,42 +255,80 @@ class Renderer extends Object with SourceMixin {
     var renderer = nestedRenderer(source)..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
-    pendingWhiteSpaceNode = null;
     if (subResult.length > 0) {
       _writeText(subResult);
     }
-    pendingWhiteSpaceNode = renderer.pendingWhiteSpaceNode;
-    // hasTemplateOnCurrentLine = previousHasTemplateOnCurrentLine;
   }
 
   Future<String> renderNodes(List<ParserNode> nodes) async {
     await _renderNodes(nodes);
-    // Do we need to add the pending white space
-    if (pendingWhiteSpaceNode != null) {
-      if (!hasContentOnCurrentLine && !hasTemplateOnCurrentLine) {
-        // do not write
-      } else {
-        var text = pendingWhiteSpaceNode.text;
-        pendingWhiteSpaceNode = null;
-        _writeText(text);
-      }
-      //}
+    // need line flush?
+    if (currentLineBuffer.length > 0) {
+      currentNodeIndex--;
+      _flushLine();
     }
-
-    // Handle the line feed for last partial
-    if (skipNextLineFeed && hasLineFeed(source)) {
-      sb.writeln();
-    }
-
     return sb.toString();
   }
 
-  Future _renderNodes(List<ParserNode> nodes) async {
-    for (var node in nodes) {
-      if (!hasTemplateOnCurrentLine) {
-        hasTemplateOnCurrentLine = (!(node is TextNode)) &&
-            (!(node is CommentNode) && (!(node is PartialNode)));
+  Future _renderPartialNode(PartialNode node) async {
+    // find current indentation
+    var previousNode = this.previousNode;
+    var indent;
+    if (previousNode is TextNode) {
+      var text = previousNode.text;
+      if (isInlineWhitespaces(text)) {
+        // Ensure previous one was ending a line
+        if (nodeNullOrHasLineFeed(getNodeAtOffset(-2))) {
+          indent = text;
+        }
       }
+    }
+    String template = await partialResolver(node.text);
+    if (template != null) {
+      bool endsWithLineFeed = hasLineFeed(template);
+      // reindent the template
+      // Keeping whether it has a last line
+      var sb = new StringBuffer();
+      var lines = LineSplitter.split(template).toList();
+
+      // First line don't indent
+      sb.write(lines.first);
+
+      _indent() {
+        if (indent != null) {
+          sb.write(indent);
+        }
+      }
+
+      // Next indent
+      if (lines.length > 1) {
+        // finish first
+        sb.writeln();
+        for (int i = 1; i < lines.length - 1; i++) {
+          _indent();
+          sb.writeln(lines[i]);
+        }
+        _indent();
+        sb.write(lines.last);
+      }
+
+      // last re-add line feed or not
+      if (endsWithLineFeed) {
+        sb.writeln();
+      }
+      template = sb.toString();
+
+      var nodes = parse(template);
+      await renderChildNodes(nodes, {}, source: template);
+    }
+  }
+
+  Future _renderNodes(List<ParserNode> nodes) async {
+    this.nodes = nodes;
+    for (currentNodeIndex = 0;
+        currentNodeIndex < nodes.length;
+        currentNodeIndex++) {
+      var node = currentNode;
 
       if (node is SectionNode) {
         var value = await getVariableValue(node.variable);
@@ -297,6 +359,9 @@ class Renderer extends Object with SourceMixin {
           }
         }
       } else if (node is PartialNode) {
+        await _renderPartialNode(node);
+
+        /*
         // Write pending space
         int indentation = 0;
         bool hasContentBefore = hasContentOnCurrentLine;
@@ -348,9 +413,11 @@ class Renderer extends Object with SourceMixin {
           }
           //}
         }
-      } else {
+        */
+      } else if (node is TextNode) {
+        renderTextNode(node);
+      } else
         await _renderBasicNode(node);
-      }
     }
   }
 
@@ -375,3 +442,6 @@ Future<String> render(String source, Map<String, dynamic> values,
 
 typedef FutureOr<String> PartialResolver(String name);
 typedef FutureOr<String> Lambda(String name);
+
+bool nodeNullOrHasLineFeed(Node node) =>
+    node == null || node is TextNode && (hasLineFeed(node.text));

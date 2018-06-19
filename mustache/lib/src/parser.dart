@@ -1,35 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/scanner.dart';
-
-import 'source.dart';
-
-bool isWhitespaces(String text) => text.trim().length == 0;
-bool isLineFeed(String text) => text == nl || text == crnl;
-
-// only valid for node text that always have line cut
-bool hasLineFeed(String text) => text.endsWith(nl);
-
-class Section {
-  SectionNode node;
-
-  Section._() {
-    node = new SectionNode(null);
-  }
-
-  List<ParserNode> get nodes => node.nodes;
-
-  Section(SectionStartNode startNode) {
-    node = new SectionNode(new VariableNode(startNode.text),
-        inverted: startNode.inverted);
-  }
-
-  VariableNode get variable => node.variable;
-
-  void add(ParserNode node) {
-    this.node.add(node);
-  }
-}
+import 'import.dart';
 
 class RootSection extends Section {
   RootSection() : super._();
@@ -38,18 +10,17 @@ class RootSection extends Section {
 }
 
 /// parse [ScannerNode] as [ParserNode]
-class Parser extends Object with SourceMixin {
+class Phase1Parser {
   final String source;
   final List<ParserNode> nodes = [];
 
-  String startDelimiter = '{{';
-
-  Parser(this.source);
+  Phase1Parser(this.source);
 
   void addNode(ParserNode node) {
     nodes.add(node);
   }
 
+  // convert scanner node to parse node
   void parse() {
     var scannerNodes = scan(source);
 
@@ -120,27 +91,129 @@ class Parser extends Object with SourceMixin {
         }
       }
     }
+  }
+}
 
+class Section {
+  SectionNode node;
+
+  List<ParserNode> currentLineNodes = [];
+
+  List<ParserNode> get nodes => node.nodes;
+
+  Section._() {
+    node = new SectionNode(null);
+  }
+
+  Section(SectionStartNode startNode) {
+    node = new SectionNode(new VariableNode(startNode.text),
+        inverted: startNode.inverted);
+  }
+
+  VariableNode get variable => node.variable;
+
+  void add(ParserNode node) {
+    this.node.add(node);
+  }
+}
+
+// Handle standalone tags, remove comments
+class Phase2Parser {
+  final List<ParserNode> sourceNodes;
+  List<ParserNode> nodes = [];
+
+  List<ParserNode> currentLineNodes = [];
+
+  Phase2Parser(this.sourceNodes);
+
+  void parse() {
+    for (int i = 0; i < sourceNodes.length; i++) {
+      var node = sourceNodes[i];
+      currentLineNodes.add(node);
+
+      if ((node is TextNode) && (hasLineFeed(node.text))) {
+        flushLine();
+      }
+    }
+    flushLine();
+  }
+
+  // Special partial handling keep text before but not ending line
+  void flushLine() {
+    bool hasStandaloneNode = false;
+    bool hasPartial = false;
+    for (var node in currentLineNodes) {
+      if (node is TextNode) {
+        if (hasStandaloneNode) {
+          // only end of line is accepted after the tag
+          if (!isLineFeed(node.text)) {
+            hasStandaloneNode = false;
+            break;
+          }
+        } else if (!isWhitespaces(node.text)) {
+          hasStandaloneNode = false;
+          break;
+        }
+      } else if (!hasStandaloneNode) {
+        if (node is CommentNode ||
+            node is SectionEndNode ||
+            node is SectionStartNode) {
+          hasStandaloneNode = true;
+        } else if (node is PartialNode) {
+          hasPartial = true;
+          hasStandaloneNode = true;
+        } else {
+          hasStandaloneNode = false;
+          break;
+        }
+      } else {
+        hasStandaloneNode = false;
+        break;
+      }
+    }
+    for (var node in currentLineNodes) {
+      if (hasStandaloneNode) {
+        if ((node is TextNode) && isWhitespaces(node.text)) {
+          // Special partial, remove ending only
+          if (hasPartial && !isLineFeed(node.text)) {
+            // keep
+          } else {
+            // skip
+            continue;
+          }
+        }
+      }
+      if (node is CommentNode) {
+        continue;
+      }
+      nodes.add(node);
+    }
+    currentLineNodes.clear();
+  }
+}
+
+// Handle sections
+class Phase3Parser {
+  final List<ParserNode> sourceNodes;
+  List<ParserNode> nodes = [];
+
+  Phase3Parser(this.sourceNodes);
+
+  // sanitize node
+  void parse() {
     // Merge in sections
     // Handle white space before/after node
-    var newNodes = <ParserNode>[];
     var sections = <Section>[new RootSection()];
 
     // no end line
-    TextNode pendingWhiteSpaceNode;
-    ParserNode previousNode;
 
     _addNode(ParserNode node) {
-      previousNode = node;
-      var section = sections.length > 0 ? sections.last : null;
-      if (section != null) {
-        section.add(node);
-      } else {
-        newNodes.add(node);
-      }
+      var section = sections.last;
+      section.add(node);
     }
 
-    for (var node in nodes) {
+    for (int i = 0; i < sourceNodes.length; i++) {
+      var node = sourceNodes[i];
       if (node is SectionStartNode) {
         var section = new Section(node);
         // first add the node then the section
@@ -159,44 +232,12 @@ class Parser extends Object with SourceMixin {
             break;
           }
         }
-      } else if (node is TextNode) {
-        /*
-        // Is it white space and no lines?
-        var text = getText(node);
-        if (!text.endsWith(nl) && _isWhitespaces(text)) {
-          pendingWhiteSpaceNode = node;
-        } else {
-          // Don't add if previous was comment
-          if (previousNode is CommentNode) {
-
-          } else {
-            _addNode(node);
-          }
-        }
-        */
-        _addNode(node);
-      } else if (node is CommentNode) {
-        // remove previous pending white space
-        pendingWhiteSpaceNode = null;
-        _addNode(node);
       } else {
-        //throw new UnimplementedError(node.toString());
         _addNode(node);
       }
     }
 
-    // Do we need to add the pending white space
-    if (pendingWhiteSpaceNode != null) {
-      if (previousNode is CommentNode) {
-      } else {
-        _addNode(pendingWhiteSpaceNode);
-      }
-      //}
-    }
-
-    nodes
-      ..clear()
-      ..addAll(sections[0].nodes);
+    nodes.addAll(sections[0].nodes);
   }
 }
 
@@ -341,11 +382,34 @@ class PartialNode extends ParserNode {
   }
 }
 
-List<ParserNode> parse(String text) {
+List<ParserNode> parsePhase1(String text) {
   if (text == null) {
     return null;
   }
-  var source = new Parser(text);
+  var source = new Phase1Parser(text);
   source.parse();
   return source.nodes;
 }
+
+List<ParserNode> parsePhase2(String text) =>
+    parseNodesPhase2(parsePhase1(text));
+
+List<ParserNode> parseNodesPhase2(List<ParserNode> nodes) {
+  if (nodes == null) {
+    return null;
+  }
+  var parser = new Phase2Parser(nodes);
+  parser.parse();
+  return parser.nodes;
+}
+
+List<ParserNode> parseNodesPhase3(List<ParserNode> nodes) {
+  if (nodes == null) {
+    return null;
+  }
+  var parser = new Phase3Parser(nodes);
+  parser.parse();
+  return parser.nodes;
+}
+
+List<ParserNode> parse(String text) => parseNodesPhase3(parsePhase2(text));

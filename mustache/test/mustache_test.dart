@@ -206,12 +206,36 @@ main() {
       expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
           "| >\n>\n");
     });
+
+    test('partial_data_before', () async {
+      // from spec
+      // Whitespace should be left untouched.
+      expect(await render('| {{>p}}\n', null, partial: (String _) => '>\n>'),
+          "| >\n>\n");
+    });
+
+    test('partial_data_before_2', () async {
+      // from spec
+      // Whitespace should be left untouched.
+      expect(await render(' {{data}} {{>p}}\n', {'data': '|'}, partial: (String _) => '>\n>'),
+          " | >\n>\n");
+    });
+
+    /*
+    - name: Inline Indentation
+    desc: Whitespace should be left untouched.
+    data: { data: '|' }
+    template: "  {{data}}  {{> partial}}\n"
+    partials: { partial: ">\n>" }
+    expected: "  |  >\n>\n"
+    */
+
   });
 
   group('lambdas', () {
     test('simple_lambda', () async {
       expect(await render("{{d}}", {"f": (_) => "value"}), "value");
-    });
+    }, skip: true);
 
     test('var_lambda', () async {
       expect(await render("{{f}}", {"f": (_) => "{{var}}", "var": "value"}),
