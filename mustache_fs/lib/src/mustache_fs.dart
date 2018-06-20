@@ -9,12 +9,15 @@ class MustacheFs {
 
   MustacheFs(this.fs);
 
-  Future<String> renderFile(String path, {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
+  Future<String> renderFile(String path,
+      {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
     if (values == null) {
       if (yamlPath != null) {
-        values = (await loadYaml(await fs.file(yamlPath).readAsString()) as Map)?.cast<String, dynamic>();
+        values = (await loadYaml(await fs.file(yamlPath).readAsString()) as Map)
+            ?.cast<String, dynamic>();
       } else if (jsonPath != null) {
-        values = (json.decode(await fs.file(jsonPath).readAsString()) as Map)?.cast<String, dynamic>();
+        values = (json.decode(await fs.file(jsonPath).readAsString()) as Map)
+            ?.cast<String, dynamic>();
       }
     }
     var source = await fs.file(path).readAsString();
@@ -43,8 +46,9 @@ class MustacheFs {
   }
 }
 
-Future<String> renderFile(
-    FileSystem fs, String path, {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
+Future<String> renderFile(FileSystem fs, String path,
+    {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
   var mustacheFs = new MustacheFs(fs);
-  return await mustacheFs.renderFile(path, values: values, yamlPath: yamlPath, jsonPath: jsonPath);
+  return await mustacheFs.renderFile(path,
+      values: values, yamlPath: yamlPath, jsonPath: jsonPath);
 }
