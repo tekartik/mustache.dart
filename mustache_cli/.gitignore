@@ -19,6 +19,3 @@ pubspec.lock
 .idea/
 *.iml
 
-
-# example output
-/example/out.html

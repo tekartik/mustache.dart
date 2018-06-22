@@ -14,6 +14,8 @@ dependencies:
     git:
       url: git@gitlab.com:tekartik/mustache.dart
       path: mustache_fs
+  args: any
+  pub_semver: any
 
 dev_dependencies:
   test: any
@@ -24,3 +26,6 @@ dependency_overrides:
     path: ../mustache
   tekartik_mustache_fs:
     path: ../mustache_fs
+
+executables:
+  dmsth: mustache_cli

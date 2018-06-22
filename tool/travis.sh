@@ -11,3 +11,8 @@ pushd mustache_fs
 pub get
 tool/travis.sh
 popd
+
+pushd mustache_cli
+pub get
+tool/travis.sh
+popd

@@ -31,7 +31,7 @@ class MustacheFs {
 
       var contextPath = context.parent.userData as String;
 
-      var ctx = fs.pathContext;
+      var ctx = fs.path;
       // try to resolve from current file
 
       if (ctx.isRelative(path)) {

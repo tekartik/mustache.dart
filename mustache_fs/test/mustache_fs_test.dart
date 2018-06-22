@@ -9,7 +9,7 @@ main() {
 }
 
 fsTest(FileSystem fs) {
-  var path = fs.pathContext;
+  var path = fs.path;
   group('basic', () {
     test('one_file', () async {
       await fs.file("test").writeAsString("content");
