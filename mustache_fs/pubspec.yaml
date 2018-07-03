@@ -10,6 +10,7 @@ dependencies:
     git:
       url: git@gitlab.com:tekartik/mustache.dart
       path: mustache
+      ref: dart2
   tekartik_firebase:
     git:
       url: git://github.com/tekartik/firebase.dart
