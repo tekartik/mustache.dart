@@ -2,11 +2,10 @@ name: tekartik_mustache_fs
 version: 0.2.0
 description: Mustache and fs together
 environment:
-  sdk: '>=1.24.3 <2.0.0'
+  sdk: '>=2.0.0-dev.63 <2.0.0'
 
 dependencies:
-  fs_shim: '>=0.8.2'
-  idb_shim: '>=1.5.0'
+  fs_shim: '>=0.9.0-dev.1'
   tekartik_mustache:
     git:
       url: git@gitlab.com:tekartik/mustache.dart
@@ -15,20 +14,26 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase
+      ref: dart2
   yaml: any
 
 dev_dependencies:
   test: any
-
-dependency_overrides:
-  fs_shim:
-#    path: ../../../../github.com/tekartik/fs_shim.dart/fs
-    git:
-      url: git://github.com/tekartik/fs_shim.dart
-      path: fs
-  tekartik_mustache:
-    path: ../mustache
   tekartik_firebase_sembast:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_sembast
+      ref: dart2
+
+dependency_overrides:
+#  fs_shim:
+#    path: ../../../../github.com/tekartik/fs_shim.dart/fs
+#    git:
+#      url: git://github.com/tekartik/fs_shim.dart
+#      path: fs
+  tekartik_mustache:
+    path: ../mustache
+#  tekartik_firebase_sembast:
+#    git:
+#      url: git://github.com/tekartik/firebase.dart
+#      path: firebase_sembast
