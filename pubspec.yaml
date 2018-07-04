@@ -1,0 +1,12 @@
+name: tekartik_mustache_repo
+version: 0.1.0
+author: Alexandre Roux Tekartik <alex@tekartik.com>
+description: Tekartik mustache repo
+homepage: https://github.com/tekartik/mustache.dart
+environment:
+  sdk: '>=2.0.0-dev.63 <2.0.0'
+dev_dependencies:
+  chrome_travis:
+    git:
+      url: git://github.com/tekartik/chrome_travis.dart
+      ref: dart2

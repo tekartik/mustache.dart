@@ -3,4 +3,4 @@
 set -xe
 
 dartanalyzer lib test
-pub run test -p vm
+pub run test -p vm,chrome
