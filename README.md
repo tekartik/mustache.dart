@@ -9,4 +9,5 @@ Features:
 
 # mustache_fs.dart
 
-FileSystem based renderer to allow for a file based templating system
+FileSystem based renderer to allow for a file based templating system. Can work on a regular file system or a
+google storage remote file system
