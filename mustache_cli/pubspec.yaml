@@ -2,7 +2,7 @@ name: tekartik_mustache_cli
 version: 0.1.0
 description: Mustache client
 environment:
-  sdk: '>=1.24.3 <2.0.0'
+  sdk: '>=1.24.3 <3.0.0'
 
 dependencies:
   fs_shim: '>=0.8.1'
