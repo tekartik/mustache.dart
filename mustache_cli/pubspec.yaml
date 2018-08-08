@@ -2,18 +2,20 @@ name: tekartik_mustache_cli
 version: 0.1.0
 description: Mustache client
 environment:
-  sdk: '>=1.24.3 <2.0.0'
+  sdk: '>=1.24.3 <3.0.0'
 
 dependencies:
   fs_shim: '>=0.8.1'
   tekartik_mustache:
     git:
-      url: git@gitlab.com:tekartik/mustache.dart
+      url: git://github.com/tekartik/mustache.dart
       path: mustache
+      ref: dart2
   tekartik_mustache_fs:
     git:
-      url: git@gitlab.com:tekartik/mustache.dart
+      url: git://github.com/tekartik/mustache.dart
       path: mustache_fs
+      ref: dart2
   args: any
   pub_semver: any
 

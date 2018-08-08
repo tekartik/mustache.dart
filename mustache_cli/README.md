@@ -6,5 +6,5 @@ pub global activate -s path .
 ````
 
 ````
-pub global activate -s git git@gitlab.com:tekartik/mustache.dart
+pub global activate -s git git://github.com/tekartik/mustache.dart
 ````

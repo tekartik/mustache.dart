@@ -2,14 +2,15 @@ name: tekartik_mustache_fs
 version: 0.2.0
 description: Mustache and fs together
 environment:
-  sdk: '>=2.0.0-dev.63 <2.0.0'
+  sdk: '>=2.0.0-dev.63 <3.0.0'
 
 dependencies:
   fs_shim: '>=0.9.0-dev.1'
   tekartik_mustache:
     git:
-      url: git@gitlab.com:tekartik/mustache.dart
+      url: git://github.com/tekartik/mustache.dart
       path: mustache
+      ref: dart2
   tekartik_firebase:
     git:
       url: git://github.com/tekartik/firebase.dart

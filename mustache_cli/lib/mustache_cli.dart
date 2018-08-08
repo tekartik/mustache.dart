@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:func/func.dart';
 import 'package:args/args.dart';
 import 'package:fs_shim/fs_io.dart';
 import 'package:path/path.dart';
@@ -54,7 +53,7 @@ mustacheMain(List<String> arguments) async {
   var exception;
   var dataContent = await fs.file(dataFilePath).readAsString();
 
-  _try(Func1<String, dynamic> decode) {
+  _try(dynamic decode(String encoded)) {
     try {
       data = decode(dataContent);
     } catch (e) {
