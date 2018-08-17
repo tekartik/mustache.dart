@@ -1,10 +1,12 @@
+# Dependencies
 
-# Local dev activate
+```yaml
+dependencies:
+  tekartik_mustache_cli:
+    git:
+      url: git://github.com/tekartik/mustache.dart
+      path: mustache_cli
+      ref: dart2
+    version: '>=0.1.0'
+```
 
-````
-pub global activate -s path .
-````
-
-````
-pub global activate -s git git://github.com/tekartik/mustache.dart
-````
