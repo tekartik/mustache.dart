@@ -9,7 +9,7 @@ Future<String> render(String source, Map<String, dynamic> values,
   if (source == null) {
     return null;
   }
-  var renderer = new Renderer()
+  var renderer = Renderer()
     ..values = values
     ..partial = partial
     ..partialContext = partialContext;
@@ -26,7 +26,7 @@ abstract class PartialParentContext extends PartialAnyContext {
 
 abstract class PartialContext extends PartialParentContext {
   factory PartialContext(dynamic userData) =>
-      new RendererPartialContext(null, userData);
+      RendererPartialContext(null, userData);
 
   set userData(dynamic userData);
 }

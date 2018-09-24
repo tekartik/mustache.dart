@@ -24,8 +24,7 @@ class MustacheFs {
 
     // init our stack
 
-    return await render(source, values,
-        partialContext: new PartialContext(path),
+    return await render(source, values, partialContext: PartialContext(path),
         partial: (String partial, PartialContext context) async {
       var path = partial;
 
@@ -48,7 +47,7 @@ class MustacheFs {
 
 Future<String> renderFile(FileSystem fs, String path,
     {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
-  var mustacheFs = new MustacheFs(fs);
+  var mustacheFs = MustacheFs(fs);
   return await mustacheFs.renderFile(path,
       values: values, yamlPath: yamlPath, jsonPath: jsonPath);
 }

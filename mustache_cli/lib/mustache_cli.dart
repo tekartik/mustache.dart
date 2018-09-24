@@ -11,12 +11,12 @@ const String versionFlag = "version";
 const String helpFlag = "help";
 const String optionOut = "out";
 
-final version = new Version(0, 1, 0);
+final version = Version(0, 1, 0);
 
 var fs = fileSystemIo;
 
 mustacheMain(List<String> arguments) async {
-  var parser = new ArgParser();
+  var parser = ArgParser();
   parser.addFlag(versionFlag, abbr: "v", help: "Version");
   parser.addFlag(helpFlag, abbr: "h", help: "Help");
   parser.addOption(optionOut, abbr: "o", help: "Destination file");

@@ -31,7 +31,7 @@ String sourceGetText(String source, int start, int end) {
 
 abstract class SourceContent {
   factory SourceContent(String source, int start, int end) =>
-      new _SourceContent(source, start, end);
+      _SourceContent(source, start, end);
   String get source;
   int get start;
   int get end;

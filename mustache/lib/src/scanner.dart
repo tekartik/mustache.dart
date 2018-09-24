@@ -9,9 +9,9 @@ String closeDelimiterDefault = "}}";
 String noEscapeDelimiter = "{";
 int noEscapeDelimiterLength = noEscapeDelimiter.length;
 
-var defaultNoEscapeDelimiterRegExp = new RegExp("\{");
-var defaultNoEscapeCloseDelimiterRegExp = new RegExp("\}\}\}");
-var nlRegExp = new RegExp('\\n');
+var defaultNoEscapeDelimiterRegExp = RegExp("\{");
+var defaultNoEscapeCloseDelimiterRegExp = RegExp("\}\}\}");
+var nlRegExp = RegExp('\\n');
 
 class ScannerDelimiter {
   final String open;
@@ -21,8 +21,8 @@ class ScannerDelimiter {
   bool isDefault;
 
   ScannerDelimiter(this.open, this.close) {
-    openRegExp = new RegExp(RegExp.escape(open));
-    closeRegExp = new RegExp(RegExp.escape(close));
+    openRegExp = RegExp(RegExp.escape(open));
+    closeRegExp = RegExp(RegExp.escape(close));
     isDefault = open == openDelimiterDefault && close == closeDelimiterDefault;
   }
 }
@@ -73,7 +73,7 @@ class Scanner extends Object with SourceMixin {
   int outerStart;
   int index = 0;
   final int end;
-  ScannerDelimiter delimiter = new DefaultScannerDelimiter();
+  ScannerDelimiter delimiter = DefaultScannerDelimiter();
 
   bool get atEnd => index == end;
 
@@ -119,7 +119,7 @@ class Scanner extends Object with SourceMixin {
       if (end == -1 || nlEnd < end) {
         index = start + nlEnd + nlLength;
         outerStart = index;
-        return new TextScannerNode(getSourceText(start, index));
+        return TextScannerNode(getSourceText(start, index));
       }
     }
 
@@ -141,7 +141,7 @@ class Scanner extends Object with SourceMixin {
         return null;
       }
     }
-    return new TextScannerNode(getSourceText(start, end));
+    return TextScannerNode(getSourceText(start, end));
   }
 
   MustacheScannerNode scanClose() {
@@ -199,7 +199,7 @@ class Scanner extends Object with SourceMixin {
 
       _skipWhitespaces();
 
-      var sb = new StringBuffer();
+      var sb = StringBuffer();
       while (true) {
         var chr = getChar(index++);
         if (isInlineWhitespace(chr)) {
@@ -211,7 +211,7 @@ class Scanner extends Object with SourceMixin {
 
       _skipWhitespaces();
 
-      sb = new StringBuffer();
+      sb = StringBuffer();
       while (true) {
         if (index >= end) {
           break;
@@ -227,7 +227,7 @@ class Scanner extends Object with SourceMixin {
         sb.write(chr);
       }
       var closeDelimiter = sb.toString();
-      delimiter = new ScannerDelimiter(openDelimiter, closeDelimiter);
+      delimiter = ScannerDelimiter(openDelimiter, closeDelimiter);
 
       // 2018-06-19 keep it doe handling standalone later
       // Skip it from result
@@ -235,7 +235,7 @@ class Scanner extends Object with SourceMixin {
     }
 
     // index is the outer end
-    return new MustacheScannerNode(source, outerStart, index, delimiter,
+    return MustacheScannerNode(source, outerStart, index, delimiter,
         sourceGetText(source, start, end));
   }
 
@@ -246,7 +246,7 @@ List<ScannerNode> scan(String source) {
   if (source == null) {
     return null;
   }
-  var scanner = new Scanner(source);
+  var scanner = Scanner(source);
   scanner.scan();
   return scanner.nodes;
 }

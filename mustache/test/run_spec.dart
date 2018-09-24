@@ -16,7 +16,7 @@ set filterFileBasenames(List<String> filterFileBasenames) =>
     _filterFileBasenames = filterFileBasenames;
 
 main() {
-  var specs_dir = new Directory(join('test', 'spec'));
+  var specs_dir = Directory(join('test', 'spec'));
   specs_dir.listSync().forEach((FileSystemEntity entity) {
     var filename = entity.path;
     if (entity is File && shouldRun(filename)) {
@@ -41,15 +41,15 @@ _defineGroupFromFile(filename, String text) {
     });
 
     tests.forEach((t) {
-      var testDescription = new StringBuffer(t['name']);
+      var testDescription = StringBuffer(t['name']);
       testDescription.write(': ');
       testDescription.write(t['desc']);
       var template = t['template'] as String;
-      var data = new Map<String, dynamic>.from(t['data'] as Map);
+      var data = Map<String, dynamic>.from(t['data'] as Map);
       var templateOneline =
           template.replaceAll('\n', '\\n').replaceAll('\r', '\\r');
       var reason =
-          new StringBuffer("Could not render right '''$templateOneline'''");
+          StringBuffer("Could not render right '''$templateOneline'''");
       var expected = t['expected'];
 
       var partials = t['partials'] as Map;
@@ -107,7 +107,7 @@ dynamic lambdas = {
   'Interpolation': (t) => 'world',
   'Interpolation - Expansion': (t) => '{{planet}}',
   'Interpolation - Alternate Delimiters': (t) => "|planet| => {{planet}}",
-  'Interpolation - Multiple Calls': new _DummyCallableWithState(),
+  'Interpolation - Multiple Calls': _DummyCallableWithState(),
   //function() { return (g=(function(){return this})()).calls=(g.calls||0)+1 }
   'Escaping': (t) => '>',
   'Section': (txt) => txt == "{{x}}" ? "yes" : "no",

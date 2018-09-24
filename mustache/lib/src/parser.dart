@@ -30,7 +30,7 @@ class Phase1Parser {
     // standalone status
     for (var scannerNode in scannerNodes) {
       if (scannerNode is TextScannerNode) {
-        addNode(new TextNode(scannerNode.text));
+        addNode(TextNode(scannerNode.text));
       } else if (scannerNode is MustacheScannerNode) {
         var text = scannerNode.text;
         String firstChar = scannerNode.text.substring(0, 1);
@@ -44,26 +44,25 @@ class Phase1Parser {
         switch (firstChar) {
           case '!':
             if (_trim(1)) {
-              addNode(new CommentNode(text));
+              addNode(CommentNode(text));
             }
 
             break;
           case '#':
             if (_trim(1)) {
-              addNode(new SectionStartNode(
-                  scannerNode.delimiter, scannerNode, text));
+              addNode(
+                  SectionStartNode(scannerNode.delimiter, scannerNode, text));
             }
             break;
           case '^':
             if (_trim(1)) {
-              addNode(new SectionStartNode(
-                  scannerNode.delimiter, scannerNode, text,
+              addNode(SectionStartNode(scannerNode.delimiter, scannerNode, text,
                   inverted: true));
             }
             break;
           case '/':
             if (_trim(1)) {
-              addNode(new SectionEndNode(scannerNode, text));
+              addNode(SectionEndNode(scannerNode, text));
             }
             break;
           case '{':
@@ -75,18 +74,18 @@ class Phase1Parser {
                 text = text.substring(1);
               }
               if (_trim(0)) {
-                addNode(new NoEscapeVariableNode(text));
+                addNode(NoEscapeVariableNode(text));
               }
             }
             break;
           case '&':
             if (_trim(1)) {
-              addNode(new NoEscapeVariableNode(text));
+              addNode(NoEscapeVariableNode(text));
             }
             break;
           case '>':
             if (_trim(1)) {
-              addNode(new PartialNode(text));
+              addNode(PartialNode(text));
             }
             break;
           case '=':
@@ -97,13 +96,13 @@ class Phase1Parser {
               text = text.substring(1);
             }
             if (_trim(0)) {
-              addNode(new DelimitersNode(text));
+              addNode(DelimitersNode(text));
             }
             break;
 
           default:
             if (_trim(0)) {
-              addNode(new VariableNode(text));
+              addNode(VariableNode(text));
             }
         }
       }
@@ -119,11 +118,11 @@ class Section {
   List<ParserNode> get nodes => node.nodes;
 
   Section._() {
-    node = new SectionNode(null);
+    node = SectionNode(null);
   }
 
   Section(SectionStartNode startNode) {
-    node = new SectionNode(new VariableNode(startNode.text),
+    node = SectionNode(VariableNode(startNode.text),
         startNode: startNode, inverted: startNode.inverted);
   }
 
@@ -220,7 +219,7 @@ class Phase3Parser {
   void parse() {
     // Merge in sections
     // Handle white space before/after node
-    var sections = <Section>[new RootSection()];
+    var sections = <Section>[RootSection()];
 
     // no end line
 
@@ -241,12 +240,12 @@ class Phase3Parser {
     for (int i = 0; i < sourceNodes.length; i++) {
       var node = sourceNodes[i];
       if (node is SectionStartNode) {
-        var section = new Section(node);
+        var section = Section(node);
         // first add the node then the section
         _addNode(section.node);
         sections.add(section);
       } else if (node is SectionEndNode) {
-        var variableNode = new VariableNode(node.text);
+        var variableNode = VariableNode(node.text);
         var variable = variableNode.name;
         // Find the section opened from the top of the stack
         // ignoring root
@@ -355,7 +354,7 @@ List<ParserNode> parseScannerNodePhase1(List<ScannerNode> scannerNodes) {
   if (scannerNodes == null) {
     return null;
   }
-  var source = new Phase1Parser();
+  var source = Phase1Parser();
   source.parseScannerNodes(scannerNodes);
   return source.nodes;
 }
@@ -364,7 +363,7 @@ List<ParserNode> parsePhase1(String text) {
   if (text == null) {
     return null;
   }
-  var source = new Phase1Parser();
+  var source = Phase1Parser();
   source.parse(text);
   return source.nodes;
 }
@@ -376,7 +375,7 @@ List<ParserNode> parseNodesPhase2(List<ParserNode> nodes) {
   if (nodes == null) {
     return null;
   }
-  var parser = new Phase2Parser(nodes);
+  var parser = Phase2Parser(nodes);
   parser.parse();
   return parser.nodes;
 }
@@ -385,7 +384,7 @@ List<ParserNode> parseNodesPhase3(List<ParserNode> nodes) {
   if (nodes == null) {
     return null;
   }
-  var parser = new Phase3Parser(nodes);
+  var parser = Phase3Parser(nodes);
   parser.parse();
   return parser.nodes;
 }
