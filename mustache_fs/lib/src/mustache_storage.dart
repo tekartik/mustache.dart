@@ -12,13 +12,13 @@ class FileSystemStorage extends FileSystemNone {
 
   FileSystemStorage(this.bucket);
   @override
-  Directory directory(String path) => new DirectoryStorage(this, path);
+  Directory directory(String path) => DirectoryStorage(this, path);
 
   @override
   File file(String path) {
     var storageFile = bucket.file(path);
     if (storageFile != null) {
-      return new FileStorage(this, path, storageFile);
+      return FileStorage(this, path, storageFile);
     }
     return null;
   }
@@ -54,16 +54,16 @@ class FileStorage extends FileSystemEntityStorage
 
   @override
   Future<File> writeAsBytes(List<int> bytes,
-      {FileMode mode: FileMode.write, bool flush: false}) async {
+      {FileMode mode = FileMode.write, bool flush = false}) async {
     await nativeInstance.save(bytes);
     return this;
   }
 
   @override
   Future<File> writeAsString(String contents,
-      {FileMode mode: FileMode.write,
-      Encoding encoding: utf8,
-      bool flush: false}) async {
+      {FileMode mode = FileMode.write,
+      Encoding encoding = utf8,
+      bool flush = false}) async {
     await nativeInstance.save(contents);
     return this;
   }
@@ -75,7 +75,7 @@ class DirectoryStorage extends FileSystemEntityStorage
   DirectoryStorage(FileSystem fs, String path) : super(fs, path);
 
   @override
-  Future<Directory> create({bool recursive: false}) async {
+  Future<Directory> create({bool recursive = false}) async {
     // there is no directory so it is always created
     return this;
   }
@@ -94,4 +94,4 @@ abstract class FileSystemEntityStorage extends Object
 }
 
 FileSystem fileSystemStorage(storage.Bucket bucket) =>
-    new FileSystemStorage(bucket);
+    FileSystemStorage(bucket);

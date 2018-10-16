@@ -32,13 +32,13 @@ class Renderer {
 
   ParserNode get previousNode => getNodeAtOffset(-1);
 
-  var sb = new StringBuffer();
+  var sb = StringBuffer();
 
   void _writeText(String text) {
     sb.write(text);
   }
 
-  dynamic getRawVariableValue(VariableNode variable, {bool recursive: true}) {
+  dynamic getRawVariableValue(VariableNode variable, {bool recursive = true}) {
     var key = variable.name;
 
     // Non dotted?
@@ -79,7 +79,7 @@ class Renderer {
       if (result is bool) {
         throw "TODO";
       } else if (result is String) {
-        var renderer = new Renderer()
+        var renderer = Renderer()
           ..values = values
           ..partial = partial;
         result = await renderer.render(result as String);
@@ -92,7 +92,8 @@ class Renderer {
     }
   }
 
-  Future getVariableValue(VariableNode variable, {bool recursive: true}) async {
+  Future getVariableValue(VariableNode variable,
+      {bool recursive = true}) async {
     var node = variable;
     var key = variable.name;
 
@@ -191,7 +192,7 @@ class Renderer {
   }
 
   Renderer nestedRenderer({PartialContext partialContext}) {
-    var renderer = new Renderer()
+    var renderer = Renderer()
       ..partial = partial
       ..partialContext = partialContext ?? this.partialContext
       ..parent = this;
@@ -232,14 +233,14 @@ class Renderer {
         }
       }
     }
-    var partialContext = new RendererPartialContext(this.partialContext);
+    var partialContext = RendererPartialContext(this.partialContext);
     String template = await partial(node.text, partialContext);
 
     if (template != null) {
       bool endsWithLineFeed = hasLineFeed(template);
       // reindent the template
       // Keeping whether it has a last line
-      var sb = new StringBuffer();
+      var sb = StringBuffer();
       var lines = LineSplitter.split(template).toList();
 
       // First line don't indent
@@ -298,8 +299,7 @@ class Renderer {
 
           if (result is String) {
             // parse it
-            var scanner = new Scanner(result)
-              ..delimiter = node.startNode.delimiter;
+            var scanner = Scanner(result)..delimiter = node.startNode.delimiter;
             scanner.scan();
 
             var parserNodes = parseScannerNodes(scanner.nodes);
@@ -333,7 +333,7 @@ class Renderer {
               await renderChildNodes(node.nodes, values);
             }
           } else {
-            throw new UnsupportedError(
+            throw UnsupportedError(
                 "value $value (${value.runtimeType}) node $node");
           }
         }
@@ -344,7 +344,7 @@ class Renderer {
       } else if (node is VariableNode) {
         await _renderVariableNode(node);
       } else {
-        throw new UnimplementedError("_renderNode $node");
+        throw UnimplementedError("_renderNode $node");
       }
     }
   }

@@ -251,7 +251,7 @@ main() {
             expect(context.userData, null);
             expect(context.parent.userData, 1);
             return "value";
-          }, partialContext: new PartialContext(1)),
+          }, partialContext: PartialContext(1)),
           "value");
     });
 
@@ -269,7 +269,7 @@ main() {
               expect(context.parent.parent.userData, 1);
               return "value";
             }
-          }, partialContext: new PartialContext(1)),
+          }, partialContext: PartialContext(1)),
           "value");
     });
 

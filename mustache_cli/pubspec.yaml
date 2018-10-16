@@ -1,5 +1,5 @@
 name: tekartik_mustache_cli
-version: 0.1.0
+version: 0.2.0
 description: Mustache client
 environment:
   sdk: '>=1.24.3 <3.0.0'
@@ -29,5 +29,3 @@ dependency_overrides:
   tekartik_mustache_fs:
     path: ../mustache_fs
 
-executables:
-  dmsth: mustache_cli

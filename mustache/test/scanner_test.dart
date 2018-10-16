@@ -2,8 +2,8 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:test/test.dart';
 
 // Mustache node
-ScannerNode mn(String text) => new MustacheScannerNode.withText(text);
-ScannerNode tn(String text) => new TextScannerNode(text);
+ScannerNode mn(String text) => MustacheScannerNode.withText(text);
+ScannerNode tn(String text) => TextScannerNode(text);
 
 main() {
   group('scanner', () {
@@ -75,7 +75,7 @@ main() {
 
     group('delimiters', () {
       test('new_delimiter', () async {
-        var scanner = new Scanner('{{=[ ]=}}');
+        var scanner = Scanner('{{=[ ]=}}');
         scanner.scan();
         expect(scanner.delimiter.open, '[');
         expect(scanner.delimiter.close, ']');
