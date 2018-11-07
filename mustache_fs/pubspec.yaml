@@ -11,20 +11,24 @@ dependencies:
       url: git://github.com/tekartik/mustache.dart
       path: mustache
       ref: dart2
-  tekartik_firebase:
+    version: '>=0.2.0'
+  tekartik_firebase_storage:
     git:
-      url: git://github.com/tekartik/firebase.dart
-      path: firebase
+      url: git://github.com/tekartik/firebase_storage.dart
+      path: storage
       ref: dart2
+    version: '>=0.3.7'
   yaml: any
 
 dev_dependencies:
   test: any
-  tekartik_firebase_sembast:
+  tekartik_firebase_storage_fs:
     git:
-      url: git://github.com/tekartik/firebase.dart
-      path: firebase_sembast
+      url: git://github.com/tekartik/firebase_storage.dart
+      path: storage_fs
       ref: dart2
+    version: '>=0.3.7'
+
 
 dependency_overrides:
 #  fs_shim:

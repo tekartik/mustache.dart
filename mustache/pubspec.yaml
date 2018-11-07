@@ -1,5 +1,5 @@
 name: tekartik_mustache
-version: 0.1.0
+version: 0.2.0
 description: Mustache dart implementation
 environment:
   sdk: '>=2.0.0-dev.61 <3.0.0'

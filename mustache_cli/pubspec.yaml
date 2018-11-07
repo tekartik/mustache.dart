@@ -11,11 +11,13 @@ dependencies:
       url: git://github.com/tekartik/mustache.dart
       path: mustache
       ref: dart2
+    version: '>=0.2.0'
   tekartik_mustache_fs:
     git:
       url: git://github.com/tekartik/mustache.dart
       path: mustache_fs
       ref: dart2
+    version: '>=0.2.0'
   args: any
   pub_semver: any
 

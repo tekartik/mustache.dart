@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:fs_shim/fs.dart';
 import 'package:path/src/context.dart';
-import 'package:tekartik_firebase/storage.dart' as storage;
+import 'package:tekartik_firebase_storage/storage.dart' as storage;
 import 'package:path/path.dart';
 import 'package:fs_shim/fs_none.dart';
 
