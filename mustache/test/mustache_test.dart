@@ -1,7 +1,7 @@
 import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group('basic', () {
     test('none', () async {
       expect(await render(null, null), null);

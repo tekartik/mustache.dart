@@ -3,12 +3,12 @@ library tekartik_mustache.supported_spec_test;
 
 import 'package:test/test.dart';
 
-import 'run_spec.dart' as _;
+import 'run_spec.dart' as run_spec;
 
-main() {
-  _.skipAll = false;
+void main() {
+  run_spec.skipAll = false;
   // ignore: deprecated_member_use
-  _.filterFileBasenames = [
+  run_spec.filterFileBasenames = [
     'interpolation',
     'sections',
     'inverted',
@@ -17,5 +17,5 @@ main() {
     'delimiters',
     'lambdas',
   ];
-  _.main();
+  run_spec.main();
 }

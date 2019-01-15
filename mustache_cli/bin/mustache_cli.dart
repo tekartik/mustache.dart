@@ -1,6 +1,8 @@
 #!/usr/bin/env dart
 library tekartik_script.bin.mustache_cli;
 
-import 'package:tekartik_mustache_cli/mustache_cli.dart' as _;
+import 'dart:async';
 
-main(List<String> arguments) => _.mustacheMain(arguments);
+import 'package:tekartik_mustache_cli/mustache_cli.dart' as mustache_cli;
+
+Future main(List<String> arguments) => mustache_cli.mustacheMain(arguments);

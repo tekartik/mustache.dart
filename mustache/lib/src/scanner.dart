@@ -65,6 +65,7 @@ class MustacheScannerNode extends ScannerNode
 
 // Scan by line
 class Scanner extends Object with SourceMixin {
+  @override
   final String source;
 
   Scanner(this.source) : end = source.length;
@@ -187,7 +188,7 @@ class Scanner extends Object with SourceMixin {
     if (getChar(start) == '=' && getChar(end - 1) == '=') {
       int index = start + 1;
 
-      _skipWhitespaces() {
+      void _skipWhitespaces() {
         while (true) {
           var chr = getChar(index);
           if (isInlineWhitespace(chr)) {

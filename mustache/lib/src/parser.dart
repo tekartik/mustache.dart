@@ -7,6 +7,7 @@ import 'import.dart';
 class RootSection extends Section {
   RootSection() : super._();
 
+  @override
   VariableNode get variable => null;
 }
 
@@ -38,7 +39,7 @@ class Phase1Parser {
         // Return true if valie
         bool _trim(int start) {
           text = text.substring(start).trim();
-          return text.length > 0;
+          return text.isNotEmpty;
         }
 
         switch (firstChar) {
@@ -223,12 +224,12 @@ class Phase3Parser {
 
     // no end line
 
-    _addNode(ParserNode node) {
+    void _addNode(ParserNode node) {
       var section = sections.last;
       section.add(node);
     }
 
-    _endSection(int index, SectionEndNode endNode) {
+    void _endSection(int index, SectionEndNode endNode) {
       // truncate of the first found
       for (int i = sections.length - 1; i >= index; i--) {
         var section = sections[i];

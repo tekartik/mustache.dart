@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 ScannerNode mn(String text) => MustacheScannerNode.withText(text);
 ScannerNode tn(String text) => TextScannerNode(text);
 
-main() {
+void main() {
   group('scanner', () {
     group('node', () {
       test('equals', () {
@@ -64,12 +64,12 @@ main() {
 
     group('lines', () {
       test('nl', () async {
-        expect(await scan("\n"), [tn("\n")]);
-        expect(await scan("\n\n"), [tn("\n"), tn("\n")]);
+        expect(scan("\n"), [tn("\n")]);
+        expect(scan("\n\n"), [tn("\n"), tn("\n")]);
       });
       test('crnl', () async {
-        expect(await scan("\r\n"), [tn("\r\n")]);
-        expect(await scan("\r\n\r\n"), [tn("\r\n"), tn("\r\n")]);
+        expect(scan("\r\n"), [tn("\r\n")]);
+        expect(scan("\r\n\r\n"), [tn("\r\n"), tn("\r\n")]);
       });
     });
 
@@ -82,10 +82,10 @@ main() {
         expect(scanner.delimiter.isDefault, false);
       });
       test('new_delimiter_node', () async {
-        expect(await scan('{{=[ ]=}}[nodex]'), [mn("=[ ]="), mn("nodex")]);
+        expect(scan('{{=[ ]=}}[nodex]'), [mn("=[ ]="), mn("nodex")]);
       });
       test('new_delimiter_section', () async {
-        expect(await scan('{{=| |=}} |#s| |data| |/s|'), [
+        expect(scan('{{=| |=}} |#s| |data| |/s|'), [
           mn('=| |='),
           tn(' '),
           mn('#s'),

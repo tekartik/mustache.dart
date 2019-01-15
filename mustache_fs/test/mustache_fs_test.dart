@@ -3,12 +3,12 @@ import 'package:test/test.dart';
 import 'package:fs_shim/fs.dart';
 import 'package:fs_shim/fs_memory.dart';
 
-main() {
+void main() {
   var fs = newMemoryFileSystem();
   fsTest(fs);
 }
 
-fsTest(FileSystem fs) {
+void fsTest(FileSystem fs) {
   var path = fs.path;
   group('basic', () {
     test('one_file', () async {

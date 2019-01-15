@@ -7,7 +7,6 @@ import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
-import 'package:dart2_constant/convert.dart' as compat;
 
 class Renderer {
   Map<String, dynamic> values;
@@ -72,7 +71,7 @@ class Renderer {
         return value;
       } else {
         // escape
-        return compat.htmlEscape.convert(value);
+        return htmlEscape.convert(value);
       }
     } else if (value is Function) {
       var result = await value(key);
@@ -210,7 +209,7 @@ class Renderer {
       ..values = values;
     var subResult = await renderer.renderNodes(nodes);
     fromNestedRendered(renderer);
-    if (subResult.length > 0) {
+    if (subResult.isNotEmpty) {
       _writeText(subResult);
     }
   }
@@ -246,7 +245,7 @@ class Renderer {
       // First line don't indent
       sb.write(lines.first);
 
-      _indent() {
+      void _indent() {
         if (indent != null) {
           sb.write(indent);
         }

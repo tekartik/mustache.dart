@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 import "package:tekartik_mustache_cli/mustache_cli.dart";
 
-main() {
+void main() {
   group('basic', () {
     test('out_file', () async {
       var testDir = join(".dart_tool", "tekartik_mustache_cli", "out_file");
@@ -46,7 +46,7 @@ main() {
 }''');
 
       var outFile = File(outPath);
-      expect(await outFile.exists(), isFalse);
+      expect(outFile.existsSync(), isFalse);
       await mustacheMain([srcData, srcPath, "--out", outPath]);
       expect(await outFile.readAsString(), '''<h1>Colors</h1>
 
