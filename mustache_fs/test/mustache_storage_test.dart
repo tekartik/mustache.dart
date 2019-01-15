@@ -4,7 +4,7 @@ import 'package:tekartik_mustache_fs/mustache_storage.dart';
 
 import 'mustache_fs_test.dart';
 
-main() {
+void main() {
   var app = FirebaseLocal().initializeApp();
   var bucket = storageServiceIo.storage(app).bucket("test");
   var fs = fileSystemStorage(bucket);

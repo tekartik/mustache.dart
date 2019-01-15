@@ -1,7 +1,7 @@
 import 'package:tekartik_mustache/src/parser.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group('parser', () {
     group('basic', () {
       test('none', () async {

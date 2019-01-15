@@ -16,7 +16,7 @@ bool isInlineWhitespaces(String text) {
   return true;
 }
 
-bool isWhitespaces(String text) => text.trim().length == 0;
+bool isWhitespaces(String text) => text.trim().isEmpty;
 
 bool isLineFeed(String text) => text == nl || text == crnl;
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:args/args.dart';
@@ -15,14 +16,14 @@ final version = Version(0, 1, 0);
 
 var fs = fileSystemIo;
 
-mustacheMain(List<String> arguments) async {
+Future mustacheMain(List<String> arguments) async {
   var parser = ArgParser();
   parser.addFlag(versionFlag, abbr: "v", help: "Version");
   parser.addFlag(helpFlag, abbr: "h", help: "Help");
   parser.addOption(optionOut, abbr: "o", help: "Destination file");
   var result = parser.parse(arguments);
 
-  _usage() {
+  void _usage() {
     print('mustach_cli <yaml_or_json> <template>');
     print(parser.usage);
     exit(0);
@@ -53,7 +54,7 @@ mustacheMain(List<String> arguments) async {
   var exception;
   var dataContent = await fs.file(dataFilePath).readAsString();
 
-  _try(dynamic decode(String encoded)) {
+  void _try(dynamic decode(String encoded)) {
     try {
       data = decode(dataContent);
     } catch (e) {
@@ -63,8 +64,8 @@ mustacheMain(List<String> arguments) async {
     }
   }
 
-  _tryJson() => _try(json.decode);
-  _tryYaml() => _try(loadYaml);
+  void _tryJson() => _try(json.decode);
+  void _tryYaml() => _try(loadYaml);
 
   if (canBeJson) {
     _tryJson();

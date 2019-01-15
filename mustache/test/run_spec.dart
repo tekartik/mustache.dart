@@ -1,23 +1,23 @@
 @TestOn('vm')
 library tekartik_mustache.spec_test;
 
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
-import 'package:dart2_constant/convert.dart';
 
 bool skipAll = true;
-List<String> _filterFileBasenames = null;
+List<String> _filterFileBasenames;
 List<String> get filterFileBasenames => _filterFileBasenames;
 @deprecated
 set filterFileBasenames(List<String> filterFileBasenames) =>
     _filterFileBasenames = filterFileBasenames;
 
-main() {
-  var specs_dir = Directory(join('test', 'spec'));
-  specs_dir.listSync().forEach((FileSystemEntity entity) {
+void main() {
+  var specsDir = Directory(join('test', 'spec'));
+  specsDir.listSync().forEach((FileSystemEntity entity) {
     var filename = entity.path;
     if (entity is File && shouldRun(filename)) {
       var text = entity.readAsStringSync(encoding: utf8);
@@ -26,7 +26,7 @@ main() {
   });
 }
 
-_defineGroupFromFile(filename, String text) {
+void _defineGroupFromFile(filename, String text) {
   var json = loadYaml(text);
   var tests = json['tests'];
   filename = filename.substring(filename.lastIndexOf('/') + 1);
@@ -98,9 +98,9 @@ bool shouldRun(String filename) {
 class _DummyCallableWithState {
   var _callCounter = 0;
 
-  call(arg) => "${++_callCounter}";
+  String call(arg) => "${++_callCounter}";
 
-  reset() => _callCounter = 0;
+  void reset() => _callCounter = 0;
 }
 
 dynamic lambdas = {
