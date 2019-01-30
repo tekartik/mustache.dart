@@ -37,7 +37,7 @@ Future mustacheMain(List<String> arguments) async {
     exit(0);
   }
 
-  String outFilePath = result[optionOut];
+  String outFilePath = result[optionOut] as String;
   var rest = result.rest;
   if (rest.length != 2) {
     _usage();
