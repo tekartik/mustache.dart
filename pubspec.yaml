@@ -1,10 +1,10 @@
 name: tekartik_mustache_repo
-version: 0.1.1
+version: 0.2.1
 author: Alexandre Roux Tekartik <alex@tekartik.com>
 description: Tekartik mustache repo
 homepage: https://github.com/tekartik/mustache.dart
 environment:
-  sdk: '>=2.0.0-dev.63 <3.0.0'
+  sdk: '>=2.1.0-dev <3.0.0'
 dev_dependencies:
   chrome_travis:
     git:
@@ -15,7 +15,21 @@ dev_dependencies:
       url: git://github.com/tekartik/build_utils.dart
       ref: dart2
     version: '>=0.6.5'
+  process_run: '>=0.10.2'
 
-# dependency_overrides:
-#  tekartik_build_utils:
-#    path: ../build_utils.dart
+  # test dependencies without version
+  tekartik_mustache:
+    git:
+      url: git://github.com/tekartik/mustache.dart
+      path: mustache
+      ref: dart2
+  tekartik_mustache_fs:
+    git:
+      url: git://github.com/tekartik/mustache.dart
+      path: mustache_fs
+      ref: dart2
+  tekartik_mustache_cli:
+    git:
+      url: git://github.com/tekartik/mustache.dart
+      path: mustache_cli
+      ref: dart2

@@ -193,6 +193,7 @@ void main() {
               case 'p2':
                 return "{{var}}";
             }
+            return null;
           }),
           "value");
     });

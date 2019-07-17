@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:fs_shim/fs.dart';
 import 'package:path/path.dart';
@@ -47,8 +48,12 @@ class FileStorage extends FileSystemEntityStorage
       : super(fs, path);
 
   @override
-  Future<List<int>> readAsBytes() async {
-    return await nativeInstance.download();
+  Future<Uint8List> readAsBytes() async {
+    var list = await nativeInstance.download();
+    if (list is Uint8List) {
+      return list;
+    }
+    return Uint8List.fromList(list);
   }
 
   @override
