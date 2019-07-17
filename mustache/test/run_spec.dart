@@ -36,7 +36,7 @@ void _defineGroupFromFile(filename, String text) {
     //to fail the second time it runs
     tearDown(() {
       _DummyCallableWithState callable =
-          lambdas['Interpolation - Multiple Calls'];
+          lambdas['Interpolation - Multiple Calls'] as _DummyCallableWithState;
       callable.reset();
     });
 
