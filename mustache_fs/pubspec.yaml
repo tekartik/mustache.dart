@@ -1,17 +1,17 @@
 name: tekartik_mustache_fs
-version: 0.2.0
+version: 0.2.1
 description: Mustache and fs together
 environment:
-  sdk: '>=2.0.0-dev.63 <3.0.0'
+  sdk: '>=2.1.0-dev <3.0.0'
 
 dependencies:
-  fs_shim: '>=0.9.0-dev.1'
+  fs_shim: '>=0.11.0+1'
   tekartik_mustache:
     git:
       url: git://github.com/tekartik/mustache.dart
       path: mustache
       ref: dart2
-    version: '>=0.2.0'
+    version: '>=0.2.1'
   tekartik_firebase_storage:
     git:
       url: git://github.com/tekartik/firebase_storage.dart
@@ -28,7 +28,7 @@ dev_dependencies:
       path: storage_fs
       ref: dart2
     version: '>=0.3.7'
-
+  process_run: '>=0.10.2'
 
 dependency_overrides:
 #  fs_shim:
