@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 library tekartik_mustache.supported_spec_test;
 
 import 'package:test/test.dart';

@@ -8,9 +8,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 import 'package:tekartik_mustache_fs/mustache_fs.dart';
 
-const String versionFlag = "version";
-const String helpFlag = "help";
-const String optionOut = "out";
+const String versionFlag = 'version';
+const String helpFlag = 'help';
+const String optionOut = 'out';
 
 final version = Version(0, 1, 0);
 
@@ -18,9 +18,9 @@ var fs = fileSystemIo;
 
 Future mustacheMain(List<String> arguments) async {
   var parser = ArgParser();
-  parser.addFlag(versionFlag, abbr: "v", help: "Version");
-  parser.addFlag(helpFlag, abbr: "h", help: "Help");
-  parser.addOption(optionOut, abbr: "o", help: "Destination file");
+  parser.addFlag(versionFlag, abbr: 'v', help: 'Version');
+  parser.addFlag(helpFlag, abbr: 'h', help: 'Help');
+  parser.addOption(optionOut, abbr: 'o', help: 'Destination file');
   var result = parser.parse(arguments);
 
   void _usage() {
@@ -33,11 +33,11 @@ Future mustacheMain(List<String> arguments) async {
     _usage();
   }
   if (result[versionFlag] == true) {
-    print("version ${version}");
+    print('version ${version}');
     exit(0);
   }
 
-  String outFilePath = result[optionOut] as String;
+  final outFilePath = result[optionOut] as String;
   var rest = result.rest;
   if (rest.length != 2) {
     _usage();
@@ -48,19 +48,17 @@ Future mustacheMain(List<String> arguments) async {
   var dataExtension = extension(dataFilePath).toLowerCase();
   var data;
 
-  bool canBeJson = dataExtension == ".json";
-  bool canBeYaml = dataExtension == ".yaml" || dataExtension == ".yml";
+  final canBeJson = dataExtension == '.json';
+  final canBeYaml = dataExtension == '.yaml' || dataExtension == '.yml';
 
   var exception;
   var dataContent = await fs.file(dataFilePath).readAsString();
 
-  void _try(dynamic decode(String encoded)) {
+  void _try(dynamic Function(String encoded) decode) {
     try {
       data = decode(dataContent);
     } catch (e) {
-      if (exception == null) {
-        exception = e;
-      }
+      exception ??= e;
     }
   }
 
@@ -85,7 +83,7 @@ Future mustacheMain(List<String> arguments) async {
   }
 
   if (!(data is Map)) {
-    stderr.writeln("source data is not a map");
+    stderr.writeln('source data is not a map');
     throw exception;
   }
 

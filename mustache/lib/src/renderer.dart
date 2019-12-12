@@ -18,7 +18,7 @@ class Renderer {
   int currentNodeIndex;
 
   ParserNode getNodeAtOffset(int offset) {
-    int index = currentNodeIndex + offset;
+    final index = currentNodeIndex + offset;
     if (index >= 0 && index < nodes.length) {
       return nodes[index];
     }
@@ -45,7 +45,7 @@ class Renderer {
       return _getRawKeyValue(key);
     }
 
-    var parts = key.split("\.");
+    var parts = key.split('\.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return _getDottedKeyValue(parts);
@@ -76,7 +76,7 @@ class Renderer {
     } else if (value is Function) {
       var result = await value(key);
       if (result is bool) {
-        throw "TODO";
+        throw 'TODO';
       } else if (result is String) {
         var renderer = Renderer()
           ..values = values
@@ -105,7 +105,7 @@ class Renderer {
       return await _fixValue(_getRawKeyValue(key));
     }
 
-    var parts = key.split("\.");
+    var parts = key.split('\.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return await _fixValue(_getDottedKeyValue(parts));
@@ -130,8 +130,8 @@ class Renderer {
   }
 
   bool _hasDottedKey(List<String> parts) {
-    bool has = true;
-    Map<String, dynamic> map = values;
+    var has = true;
+    var map = values;
     for (var part in parts) {
       if (map?.containsKey(part) == true) {
         var value = map[part];
@@ -150,9 +150,9 @@ class Renderer {
   }
 
   dynamic _getDottedKeyValue(List<String> parts) {
-    bool contains = true;
+    var contains = true;
     var value;
-    Map<String, dynamic> map = values;
+    var map = values;
     for (var part in parts) {
       if (map?.containsKey(part) == true) {
         value = map[part];
@@ -233,10 +233,10 @@ class Renderer {
       }
     }
     var partialContext = RendererPartialContext(this.partialContext);
-    String template = await partial(node.text, partialContext);
+    var template = await partial(node.text, partialContext);
 
     if (template != null) {
-      bool endsWithLineFeed = hasLineFeed(template);
+      final endsWithLineFeed = hasLineFeed(template);
       // reindent the template
       // Keeping whether it has a last line
       var sb = StringBuffer();
@@ -255,7 +255,7 @@ class Renderer {
       if (lines.length > 1) {
         // finish first
         sb.writeln();
-        for (int i = 1; i < lines.length - 1; i++) {
+        for (var i = 1; i < lines.length - 1; i++) {
           _indent();
           sb.writeln(lines[i]);
         }
@@ -288,8 +288,8 @@ class Renderer {
         if (value is Function) {
           // section lambda
           // get the inner content as is
-          int keyStart = node.startNode.sourceContent.end;
-          int keyEnd = node.endNode.sourceContent.start;
+          final keyStart = node.startNode.sourceContent.end;
+          final keyEnd = node.endNode.sourceContent.start;
           key = sourceGetText(
               node.startNode.sourceContent.source, keyStart, keyEnd);
 
@@ -333,7 +333,7 @@ class Renderer {
             }
           } else {
             throw UnsupportedError(
-                "value $value (${value.runtimeType}) node $node");
+                'value $value (${value.runtimeType}) node $node');
           }
         }
       } else if (node is PartialNode) {
@@ -343,7 +343,7 @@ class Renderer {
       } else if (node is VariableNode) {
         await _renderVariableNode(node);
       } else {
-        throw UnimplementedError("_renderNode $node");
+        throw UnimplementedError('_renderNode $node');
       }
     }
   }

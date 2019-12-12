@@ -2,21 +2,21 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:test/test.dart';
-import "package:tekartik_mustache_cli/mustache_cli.dart";
+import 'package:tekartik_mustache_cli/mustache_cli.dart';
 
 void main() {
   group('basic', () {
     test('out_file', () async {
-      var testDir = join(".dart_tool", "tekartik_mustache_cli", "out_file");
+      var testDir = join('.dart_tool', 'tekartik_mustache_cli', 'out_file');
       try {
         await Directory(testDir).delete(recursive: true);
       } catch (_) {}
       try {
         await Directory(testDir).create(recursive: true);
       } catch (_) {}
-      var srcPath = join(testDir, "index.html");
-      var srcData = join(testDir, "data.json");
-      var outPath = join(testDir, "out.html");
+      var srcPath = join(testDir, 'index.html');
+      var srcData = join(testDir, 'data.json');
+      var outPath = join(testDir, 'out.html');
 
       await File(srcPath).writeAsString('''<h1>{{header}}</h1>
 {{#bug}}
@@ -47,7 +47,7 @@ void main() {
 
       var outFile = File(outPath);
       expect(outFile.existsSync(), isFalse);
-      await mustacheMain([srcData, srcPath, "--out", outPath]);
+      await mustacheMain([srcData, srcPath, '--out', outPath]);
       expect(await outFile.readAsString(), '''<h1>Colors</h1>
 
 <li><strong>red</strong></li>

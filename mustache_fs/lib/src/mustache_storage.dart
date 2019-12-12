@@ -27,7 +27,7 @@ class FileSystemStorage extends FileSystemNone {
   Context get path => url;
 
   @override
-  String get name => "storage";
+  String get name => 'storage';
 
   @override
   Context get pathContext => url;

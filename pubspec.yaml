@@ -4,7 +4,7 @@ author: Alexandre Roux Tekartik <alex@tekartik.com>
 description: Tekartik mustache repo
 homepage: https://github.com/tekartik/mustache.dart
 environment:
-  sdk: '>=2.1.0-dev <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 dev_dependencies:
   chrome_travis:
     git:
