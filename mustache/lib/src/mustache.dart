@@ -31,5 +31,6 @@ abstract class PartialContext extends PartialParentContext {
   set userData(dynamic userData);
 }
 
-typedef FutureOr<String> PartialResolver(String name, PartialContext context);
-typedef FutureOr<String> Lambda(String name);
+typedef PartialResolver = FutureOr<String> Function(
+    String name, PartialContext context);
+typedef Lambda = FutureOr<String> Function(String name);

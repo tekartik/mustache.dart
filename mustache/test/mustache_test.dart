@@ -6,127 +6,127 @@ void main() {
     test('none', () async {
       expect(await render(null, null), null);
       expect(await render(null, {}), null);
-      expect(await render(null, {"test": "value"}), null);
+      expect(await render(null, {'test': 'value'}), null);
 
-      expect(await render("_", null), "_");
-      expect(await render("_", {}), "_");
+      expect(await render('_', null), '_');
+      expect(await render('_', {}), '_');
     });
 
     test('one_var', () async {
-      expect(await render("{{var}}", {"var": "value"}), "value");
+      expect(await render('{{var}}', {'var': 'value'}), 'value');
     });
 
     test('one_comment', () async {
-      expect(await render("{{!comment}}", null), "");
+      expect(await render('{{!comment}}', null), '');
     });
 
     test('false_section', () async {
-      expect(await render("{{#s}}{{/s}}", null), "");
+      expect(await render('{{#s}}{{/s}}', null), '');
     });
   });
 
   group('lines', () {
     test('empty_line', () async {
-      expect(await render("\n", null), "\n");
+      expect(await render('\n', null), '\n');
     });
     test('empty_lines', () async {
-      expect(await render("\n\n", null), "\n\n");
+      expect(await render('\n\n', null), '\n\n');
     });
   });
   group('comments', () {
     test('single_line', () async {
-      expect(await render(" {{!comment}}\n", null), "");
+      expect(await render(' {{!comment}}\n', null), '');
     });
     test('no_single_on_line', () async {
-      expect(await render("a{{!comment}}\n", null), "a\n");
+      expect(await render('a{{!comment}}\n', null), 'a\n');
     });
   });
   group('variable', () {
     test('missing_variable', () async {
-      expect(await render("{{var}}", {"var": null}), "");
-      expect(await render("{{var}}", null), "");
+      expect(await render('{{var}}', {'var': null}), '');
+      expect(await render('{{var}}', null), '');
     });
     test('missing_var_standalone', () async {
       // variable cannot be standalone
-      expect(await render("{{var}}\n", null), "\n");
+      expect(await render('{{var}}\n', null), '\n');
     });
     test('escape', () async {
-      expect(await render("{{var}}", {"var": "&"}), "&amp;");
+      expect(await render('{{var}}', {'var': '&'}), '&amp;');
     });
     test('spaces', () async {
-      expect(await render("{{ var }}", {"var": "&"}), "&amp;");
+      expect(await render('{{ var }}', {'var': '&'}), '&amp;');
     });
     test('no_escape', () async {
-      expect(await render("{{{var}}}", {"var": "&"}), "&");
+      expect(await render('{{{var}}}', {'var': '&'}), '&');
     });
     test('spaces_no_escape', () async {
-      expect(await render("{{{ var }}}", {"var": "&"}), "&");
+      expect(await render('{{{ var }}}', {'var': '&'}), '&');
     });
     test('var_space_before', () async {
-      expect(await render(" {{var}}", {"var": "value"}), " value");
+      expect(await render(' {{var}}', {'var': 'value'}), ' value');
     });
     test('surrounding', () async {
-      expect(await render(" {{var}} ", {"var": "value"}), " value ");
+      expect(await render(' {{var}} ', {'var': 'value'}), ' value ');
     });
     test('dotted', () async {
       expect(
-          await render("{{var.sub}}", {
-            "var": {"sub": "value"}
+          await render('{{var.sub}}', {
+            'var': {'sub': 'value'}
           }),
-          "value");
+          'value');
     });
   });
   group('section', () {
     test('true', () async {
-      expect(await render('{{#s}}value{{/s}}', {'s': true}), "value");
+      expect(await render('{{#s}}value{{/s}}', {'s': true}), 'value');
     });
     test('section_space_before', () async {
-      expect(await render(' {{#s}}{{/s}}', {'s': true}), " ");
+      expect(await render(' {{#s}}{{/s}}', {'s': true}), ' ');
     });
     test('section_space_after', () async {
-      expect(await render('{{#s}}{{/s}} ', {'s': true}), " ");
+      expect(await render('{{#s}}{{/s}} ', {'s': true}), ' ');
     });
     test('space_inner', () async {
-      expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
+      expect(await render('{{#s}} {{/s}}', {'s': true}), ' ');
     });
     test('space_line_feed_inner', () async {
-      expect(await render('{{#s}} \n{{/s}}', {'s': true}), " \n");
+      expect(await render('{{#s}} \n{{/s}}', {'s': true}), ' \n');
     });
     test('end_space_inner', () async {
-      expect(await render('{{#s}}\n {{/s}}', {'s': true}), "");
+      expect(await render('{{#s}}\n {{/s}}', {'s': true}), '');
     });
     test('space_line_feed_space_inner', () async {
-      expect(await render('{{#s}} \n {{/s}}', {'s': true}), " \n");
+      expect(await render('{{#s}} \n {{/s}}', {'s': true}), ' \n');
     });
     test('space_before_inner', () async {
-      expect(await render(' {{#s}} {{/s}}', {'s': true}), "  ");
+      expect(await render(' {{#s}} {{/s}}', {'s': true}), '  ');
     });
     test('space_everywhere', () async {
-      expect(await render(' {{#s}} {{/s}} ', {'s': true}), "   ");
+      expect(await render(' {{#s}} {{/s}} ', {'s': true}), '   ');
     });
     test('space_char_after', () async {
-      expect(await render('{{#s}}\n {{/s}}a', {'s': true}), " a");
+      expect(await render('{{#s}}\n {{/s}}a', {'s': true}), ' a');
     });
     test('spaces', () async {
-      expect(await render('{{#s}} {{/s}}', {'s': true}), " ");
-      expect(await render('{{#s}} {{/s}}\n', {'s': true}), " \n");
+      expect(await render('{{#s}} {{/s}}', {'s': true}), ' ');
+      expect(await render('{{#s}} {{/s}}\n', {'s': true}), ' \n');
     });
     test('multi_section', () async {
       expect(
-          await render(' {{#s}} {{/s}} {{#s}} {{/s}} ', {'s': true}), "     ");
+          await render(' {{#s}} {{/s}} {{#s}} {{/s}} ', {'s': true}), '     ');
     });
     test('inner_comment', () async {
-      expect(await render('{{#s}} {{!comment}}{{/s}}\n', {'s': true}), " \n");
+      expect(await render('{{#s}} {{!comment}}{{/s}}\n', {'s': true}), ' \n');
     });
     test('inverted_valse', () async {
-      expect(await render('{{^s}}value{{/s}}', {'s': false}), "value");
+      expect(await render('{{^s}}value{{/s}}', {'s': false}), 'value');
     });
     test('simple_map', () async {
       expect(
           await render('{{#s}}{{var}}{{/s}}', {
             's': {'var': 'value'}
           }),
-          "value");
+          'value');
     });
     test('simple_list', () async {
       expect(
@@ -136,7 +136,7 @@ void main() {
               {'var': 'value2'}
             ]
           }),
-          "value1value2");
+          'value1value2');
     });
     test('nested_map', () async {
       expect(
@@ -144,7 +144,7 @@ void main() {
             's1': {'var': 'value'},
             's2': {}
           }),
-          "value");
+          'value');
     });
     test('context_precendence', () async {
       expect(
@@ -152,21 +152,21 @@ void main() {
             'a': {'b': {}},
             'b': {'c': 'ERROR'}
           }),
-          "");
+          '');
     });
     test('standalone_lines', () async {
-      expect(await render('{{#s}}\n{{/s}}', {'s': true}), "");
+      expect(await render('{{#s}}\n{{/s}}', {'s': true}), '');
     });
     test('standalone_lines_indented', () async {
-      expect(await render(' {{#s}}\n {{/s}}', {'s': true}), "");
+      expect(await render(' {{#s}}\n {{/s}}', {'s': true}), '');
     });
 
     test('implicit_string', () async {
       expect(
           await render('{{#list}}{{.}}{{/list}}', {
-            'list': ["value"]
+            'list': ['value']
           }),
-          "value");
+          'value');
     });
   });
 
@@ -174,35 +174,35 @@ void main() {
     test('simple_partial', () async {
       expect(
           await render('{{>partial}}', null,
-              partial: (String _, _ctx) => "value"),
-          "value");
+              partial: (String _, _ctx) => 'value'),
+          'value');
     });
     test('partial_var', () async {
       expect(
-          await render('{{>partial}}', {"var": "value"},
-              partial: (String _, _ctx) => "{{var}}"),
-          "value");
+          await render('{{>partial}}', {'var': 'value'},
+              partial: (String _, _ctx) => '{{var}}'),
+          'value');
     });
     test('sub_partial_var', () async {
       expect(
-          await render('{{>p1}}', {"var": "value"},
+          await render('{{>p1}}', {'var': 'value'},
               partial: (String partial, _) {
             switch (partial) {
               case 'p1':
                 return '{{>p2}}';
               case 'p2':
-                return "{{var}}";
+                return '{{var}}';
             }
             return null;
           }),
-          "value");
+          'value');
     });
     test('ending crlf', () async {
       // from spec
-      // "\r\n" should be considered a newline for standalone tags.'
+      // '\r\n' should be considered a newline for standalone tags.'
       expect(
           await render('{{>p}}\r\n|', null, partial: (String _, _ctx) => '>'),
-          ">|");
+          '>|');
     });
     test('partial_no_previous_line', () async {
       // from spec
@@ -210,7 +210,7 @@ void main() {
       expect(
           await render('  {{>p}}\n>', null,
               partial: (String _, _ctx) => '>\n>'),
-          "  >\n  >>");
+          '  >\n  >>');
     });
     test('partial_no_previous_line', () async {
       // from spec
@@ -218,14 +218,14 @@ void main() {
       expect(
           await render('  {{>p}}\n>', null,
               partial: (String _, _ctx) => '>\n>'),
-          "  >\n  >>");
+          '  >\n  >>');
     });
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
       expect(
           await render('| {{>p}}\n', null, partial: (String _, _ctx) => '>\n>'),
-          "| >\n>\n");
+          '| >\n>\n');
     });
 
     test('partial_data_before', () async {
@@ -233,7 +233,7 @@ void main() {
       // Whitespace should be left untouched.
       expect(
           await render('| {{>p}}\n', null, partial: (String _, _ctx) => '>\n>'),
-          "| >\n>\n");
+          '| >\n>\n');
     });
 
     test('partial_data_before_2', () async {
@@ -242,88 +242,88 @@ void main() {
       expect(
           await render(' {{data}} {{>p}}\n', {'data': '|'},
               partial: (String _, _ctx) => '>\n>'),
-          " | >\n>\n");
+          ' | >\n>\n');
     });
     test('partial_root_depth', () async {
       expect(
           await render('{{>partial}}', null,
               partial: (String name, PartialContext context) {
-            expect(name, "partial");
+            expect(name, 'partial');
             expect(context.userData, null);
             expect(context.parent.userData, 1);
-            return "value";
+            return 'value';
           }, partialContext: PartialContext(1)),
-          "value");
+          'value');
     });
 
     test('partial_sub_depth', () async {
       expect(
           await render('{{>p1}}', null,
               partial: (String name, PartialContext context) {
-            if (name == "p1") {
+            if (name == 'p1') {
               expect(context.parent.userData, 1);
               context.userData = 2;
-              return "{{>p2}}";
+              return '{{>p2}}';
             } else {
-              expect(name, "p2");
+              expect(name, 'p2');
               expect(context.parent.userData, 2);
               expect(context.parent.parent.userData, 1);
-              return "value";
+              return 'value';
             }
           }, partialContext: PartialContext(1)),
-          "value");
+          'value');
     });
 
     /*
     - name: Inline Indentation
     desc: Whitespace should be left untouched.
     data: { data: '|' }
-    template: "  {{data}}  {{> partial}}\n"
-    partials: { partial: ">\n>" }
-    expected: "  |  >\n>\n"
+    template: '  {{data}}  {{> partial}}\n'
+    partials: { partial: '>\n>' }
+    expected: '  |  >\n>\n'
     */
   });
 
   group('lambdas', () {
     test('simple_lambda', () async {
       expect(
-          await render("{{f}}", {
-            "f": (String name) {
+          await render('{{f}}', {
+            'f': (String name) {
               // expected name
-              expect(name, "f");
-              return "value";
+              expect(name, 'f');
+              return 'value';
             }
           }),
-          "value");
+          'value');
     });
 
     test('var_lambda', () async {
-      expect(await render("{{f}}", {"f": (_) => "{{var}}", "var": "value"}),
-          "value");
+      expect(await render('{{f}}', {'f': (_) => '{{var}}', 'var': 'value'}),
+          'value');
     });
 
     test('lambda_section', () async {
       expect(
-          await render("{{#f}}inner{{/f}}", {
-            "f": (String name) {
+          await render('{{#f}}inner{{/f}}', {
+            'f': (String name) {
               // expected name
-              expect(name, "inner");
-              return "value";
+              expect(name, 'inner');
+              return 'value';
             }
           }),
-          "value");
+          'value');
     });
 
     test('lambda_raw_section', () async {
       expect(
-          await render("{{#f}}{{x}}{{/f}}", {
-            "f": (String name) {
+          await render('{{#f}}{{x}}{{/f}}', {
+            'f': (String name) {
               // expected name
-              expect(name, "{{x}}");
-              return "value";
+              expect(name, '{{x}}');
+              return 'value';
             }
           }),
-          "value");
+          'value');
     });
   });
 

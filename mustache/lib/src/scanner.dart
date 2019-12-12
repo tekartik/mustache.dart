@@ -3,14 +3,14 @@ import 'package:tekartik_mustache/src/source.dart';
 
 import 'import.dart';
 
-String openDelimiterDefault = "{{";
-String closeDelimiterDefault = "}}";
+String openDelimiterDefault = '{{';
+String closeDelimiterDefault = '}}';
 
-String noEscapeDelimiter = "{";
+String noEscapeDelimiter = '{';
 int noEscapeDelimiterLength = noEscapeDelimiter.length;
 
-var defaultNoEscapeDelimiterRegExp = RegExp("\{");
-var defaultNoEscapeCloseDelimiterRegExp = RegExp("\}\}\}");
+var defaultNoEscapeDelimiterRegExp = RegExp('\{');
+var defaultNoEscapeCloseDelimiterRegExp = RegExp('\}\}\}');
 var nlRegExp = RegExp('\\n');
 
 class ScannerDelimiter {
@@ -99,9 +99,9 @@ class Scanner extends Object with SourceMixin {
   TextScannerNode scanOpen() {
     atOpenDelimiter = false;
 
-    int start = index;
+    final start = index;
     var text = source.substring(start);
-    int end = text.indexOf(delimiter.openRegExp);
+    var end = text.indexOf(delimiter.openRegExp);
 
     /*
     // We split by lines
@@ -115,7 +115,7 @@ class Scanner extends Object with SourceMixin {
     }
     */
     // \n
-    int nlEnd = text.indexOf(nlRegExp);
+    var nlEnd = text.indexOf(nlRegExp);
     if (nlEnd != -1) {
       if (end == -1 || nlEnd < end) {
         index = start + nlEnd + nlLength;
@@ -146,10 +146,10 @@ class Scanner extends Object with SourceMixin {
   }
 
   MustacheScannerNode scanClose() {
-    int start = index;
+    var start = index;
     var text = source.substring(start);
 
-    bool defaultNoEscape = false;
+    var defaultNoEscape = false;
     int end;
 
     // handle triple escape only for default delimiters
@@ -186,7 +186,7 @@ class Scanner extends Object with SourceMixin {
 
     // Handle delimiter change...
     if (getChar(start) == '=' && getChar(end - 1) == '=') {
-      int index = start + 1;
+      var index = start + 1;
 
       void _skipWhitespaces() {
         while (true) {

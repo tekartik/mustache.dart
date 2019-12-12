@@ -8,7 +8,7 @@ bool isWhitespace(String chr) {
 }
 
 bool isInlineWhitespaces(String text) {
-  for (int unit in text.codeUnits) {
+  for (final unit in text.codeUnits) {
     if (unit != tabUnit && unit != spaceUnit) {
       return false;
     }

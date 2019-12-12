@@ -34,7 +34,7 @@ class Phase1Parser {
         addNode(TextNode(scannerNode.text));
       } else if (scannerNode is MustacheScannerNode) {
         var text = scannerNode.text;
-        String firstChar = scannerNode.text.substring(0, 1);
+        final firstChar = scannerNode.text.substring(0, 1);
 
         // Return true if valie
         bool _trim(int start) {
@@ -144,7 +144,7 @@ class Phase2Parser {
   Phase2Parser(this.sourceNodes);
 
   void parse() {
-    for (int i = 0; i < sourceNodes.length; i++) {
+    for (var i = 0; i < sourceNodes.length; i++) {
       var node = sourceNodes[i];
       currentLineNodes.add(node);
 
@@ -157,8 +157,8 @@ class Phase2Parser {
 
   // Special partial handling keep text before but not ending line
   void flushLine() {
-    bool hasStandaloneNode = false;
-    bool hasPartial = false;
+    var hasStandaloneNode = false;
+    var hasPartial = false;
     for (var node in currentLineNodes) {
       if (node is TextNode) {
         if (hasStandaloneNode) {
@@ -231,14 +231,14 @@ class Phase3Parser {
 
     void _endSection(int index, SectionEndNode endNode) {
       // truncate of the first found
-      for (int i = sections.length - 1; i >= index; i--) {
+      for (var i = sections.length - 1; i >= index; i--) {
         var section = sections[i];
         section.node.endNode = endNode;
       }
       sections = sections.sublist(0, index);
     }
 
-    for (int i = 0; i < sourceNodes.length; i++) {
+    for (var i = 0; i < sourceNodes.length; i++) {
       var node = sourceNodes[i];
       if (node is SectionStartNode) {
         var section = Section(node);
@@ -250,7 +250,7 @@ class Phase3Parser {
         var variable = variableNode.name;
         // Find the section opened from the top of the stack
         // ignoring root
-        for (int i = sections.length - 1; i > 0; i--) {
+        for (var i = sections.length - 1; i > 0; i--) {
           var section = sections[i];
           if (section.variable.name == variable) {
             _endSection(i, node);
@@ -324,7 +324,7 @@ class SectionNode extends ParserNode {
 
   @override
   String toString() {
-    return "Section: ${variable} ${nodes}";
+    return 'Section: ${variable} ${nodes}';
   }
 }
 

@@ -2,7 +2,7 @@ name: tekartik_mustache_fs
 version: 0.2.1
 description: Mustache and fs together
 environment:
-  sdk: '>=2.1.0-dev <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
   fs_shim: '>=0.11.0+1'

@@ -8,7 +8,7 @@ import 'mustache_fs_test.dart';
 
 void main() {
   var app = FirebaseLocal().initializeApp();
-  var bucket = storageServiceIo.storage(app).bucket("test");
+  var bucket = storageServiceIo.storage(app).bucket('test');
   var fs = fileSystemStorage(bucket);
   fsTest(fs);
 }
