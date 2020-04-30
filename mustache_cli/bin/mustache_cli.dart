@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 library tekartik_script.bin.mustache_cli;
 
 import 'dart:async';
