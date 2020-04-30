@@ -24,7 +24,7 @@ dependencies:
 dev_dependencies:
   test: any
   yaml: any
-  process_run: '>=0.10.2'
+  process_run: '>=0.10.9-dev.1'
 
 dependency_overrides:
   tekartik_mustache:
