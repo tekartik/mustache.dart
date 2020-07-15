@@ -4,7 +4,7 @@ import 'package:fs_shim/fs.dart';
 import 'package:fs_shim/fs_memory.dart';
 
 void main() {
-  var fs = newMemoryFileSystem();
+  var fs = newFileSystemMemory();
   fsTest(fs);
 }
 
