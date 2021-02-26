@@ -1,6 +1,7 @@
 name: tekartik_mustache_cli
 version: 0.2.2
 description: Mustache client
+publish_to: none
 environment:
   sdk: '>=2.8.0 <3.0.0'
 

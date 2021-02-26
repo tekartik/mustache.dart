@@ -1,6 +1,7 @@
 name: tekartik_mustache
 version: 0.3.0
 description: Mustache dart implementation
+publish_to: none
 environment:
   sdk: '>=2.6.0 <3.0.0'
 

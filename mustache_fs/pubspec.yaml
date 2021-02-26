@@ -1,6 +1,7 @@
 name: tekartik_mustache_fs
 version: 0.2.1
 description: Mustache and fs together
+publish_to: none
 environment:
   sdk: '>=2.6.0 <3.0.0'
 
