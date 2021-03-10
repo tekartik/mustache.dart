@@ -24,7 +24,7 @@ void fsTest(FileSystem fs) {
 
     test('include_relative_file', () async {
       var subFilePath = path.join('sub', 'other');
-      await fs.file('test').writeAsString('{{> ${subFilePath} }}');
+      await fs.file('test').writeAsString('{{> $subFilePath }}');
       await fs.directory(path.dirname(subFilePath)).create();
       await fs.file(subFilePath).writeAsString('content');
       expect(await renderFile(fs, 'test'), 'content');

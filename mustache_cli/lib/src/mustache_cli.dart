@@ -33,7 +33,7 @@ Future mustacheMain(List<String> arguments) async {
     _usage();
   }
   if (result[versionFlag] == true) {
-    print('version ${version}');
+    print('version $version');
     exit(0);
   }
 

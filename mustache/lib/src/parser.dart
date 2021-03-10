@@ -324,7 +324,7 @@ class SectionNode extends ParserNode {
 
   @override
   String toString() {
-    return 'Section: ${variable} ${nodes}';
+    return 'Section: $variable $nodes';
   }
 }
 
