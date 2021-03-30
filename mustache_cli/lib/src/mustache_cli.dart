@@ -37,7 +37,7 @@ Future mustacheMain(List<String> arguments) async {
     exit(0);
   }
 
-  final outFilePath = result[optionOut] as String;
+  final outFilePath = result[optionOut] as String?;
   var rest = result.rest;
   if (rest.length != 2) {
     _usage();
@@ -46,12 +46,12 @@ Future mustacheMain(List<String> arguments) async {
   var dataFilePath = rest[0];
   var templateFilePath = rest[1];
   var dataExtension = extension(dataFilePath).toLowerCase();
-  var data;
+  Object? data;
 
   final canBeJson = dataExtension == '.json';
   final canBeYaml = dataExtension == '.yaml' || dataExtension == '.yml';
 
-  var exception;
+  Object? exception;
   var dataContent = await fs.file(dataFilePath).readAsString();
 
   void _try(dynamic Function(String encoded) decode) {
@@ -84,7 +84,7 @@ Future mustacheMain(List<String> arguments) async {
 
   if (!(data is Map)) {
     stderr.writeln('source data is not a map');
-    throw exception;
+    throw exception ?? StateError('source data not a map');
   }
 
   var mustacheResult = await renderFile(fs, templateFilePath,
