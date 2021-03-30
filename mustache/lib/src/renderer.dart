@@ -9,31 +9,31 @@ import 'package:tekartik_mustache/src/source.dart';
 import 'import.dart';
 
 class Renderer {
-  Map<String, dynamic> values;
-  Renderer parent;
-  PartialResolver partial;
-  PartialContext partialContext;
+  Map<String, dynamic>? values;
+  Renderer? parent;
+  PartialResolver? partial;
+  PartialContext? partialContext;
 
-  List<ParserNode> nodes;
-  int currentNodeIndex;
+  late List<ParserNode?> nodes;
+  int? currentNodeIndex;
 
-  ParserNode getNodeAtOffset(int offset) {
-    final index = currentNodeIndex + offset;
+  ParserNode? getNodeAtOffset(int offset) {
+    final index = currentNodeIndex! + offset;
     if (index >= 0 && index < nodes.length) {
       return nodes[index];
     }
     return null;
   }
 
-  ParserNode get currentNode => nodes[currentNodeIndex];
+  ParserNode? get currentNode => nodes[currentNodeIndex!];
 
-  ParserNode get nextNode => getNodeAtOffset(1);
+  ParserNode? get nextNode => getNodeAtOffset(1);
 
-  ParserNode get previousNode => getNodeAtOffset(-1);
+  ParserNode? get previousNode => getNodeAtOffset(-1);
 
   var sb = StringBuffer();
 
-  void _writeText(String text) {
+  void _writeText(String? text) {
     sb.write(text);
   }
 
@@ -45,7 +45,7 @@ class Renderer {
       return _getRawKeyValue(key);
     }
 
-    var parts = key.split('\.');
+    var parts = key!.split('\.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return _getDottedKeyValue(parts);
@@ -65,7 +65,7 @@ class Renderer {
     return null;
   }
 
-  Future fixValue(VariableNode node, String key, dynamic value) async {
+  Future fixValue(VariableNode? node, String? key, dynamic value) async {
     if (value is String) {
       if (node is NoEscapeVariableNode) {
         return value;
@@ -81,9 +81,9 @@ class Renderer {
         var renderer = Renderer()
           ..values = values
           ..partial = partial;
-        result = await renderer.render(result as String);
+        result = await renderer.render(result);
         // escape
-        result = await fixValue(node, key, result) as String;
+        result = await fixValue(node, key, result) as String?;
       }
       return result;
     } else {
@@ -105,7 +105,7 @@ class Renderer {
       return await _fixValue(_getRawKeyValue(key));
     }
 
-    var parts = key.split('\.');
+    var parts = key!.split('\.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return await _fixValue(_getDottedKeyValue(parts));
@@ -125,8 +125,8 @@ class Renderer {
     return null;
   }
 
-  bool _hasRawKey(String key) {
-    return values.containsKey(key);
+  bool _hasRawKey(String? key) {
+    return values!.containsKey(key);
   }
 
   bool _hasDottedKey(List<String> parts) {
@@ -134,7 +134,7 @@ class Renderer {
     var map = values;
     for (var part in parts) {
       if (map?.containsKey(part) == true) {
-        var value = map[part];
+        var value = map![part];
         if (value is Map) {
           map = value.cast<String, dynamic>();
         } else {
@@ -149,13 +149,13 @@ class Renderer {
     return has;
   }
 
-  dynamic _getDottedKeyValue(List<String> parts) {
+  Object? _getDottedKeyValue(List<String> parts) {
     var contains = true;
-    var value;
+    Object? value;
     var map = values;
     for (var part in parts) {
       if (map?.containsKey(part) == true) {
-        value = map[part];
+        value = map![part];
         if (value is Map) {
           map = value.cast<String, dynamic>();
         } else {
@@ -174,8 +174,8 @@ class Renderer {
     }
   }
 
-  dynamic _getRawKeyValue(String key) {
-    return values[key];
+  dynamic _getRawKeyValue(String? key) {
+    return values![key!];
   }
 
   void renderTextNode(TextNode node) {
@@ -190,7 +190,7 @@ class Renderer {
     }
   }
 
-  Renderer nestedRenderer({PartialContext partialContext}) {
+  Renderer nestedRenderer({PartialContext? partialContext}) {
     var renderer = Renderer()
       ..partial = partial
       ..partialContext = partialContext ?? this.partialContext
@@ -202,8 +202,8 @@ class Renderer {
   // when returning
   void fromNestedRendered(Renderer renderer) {}
 
-  Future renderChildNodes(List<ParserNode> nodes, Map<String, dynamic> values,
-      {PartialContext partialContext}) async {
+  Future renderChildNodes(List<ParserNode?> nodes, Map<String, dynamic>? values,
+      {PartialContext? partialContext}) async {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
     var renderer = nestedRenderer(partialContext: partialContext)
       ..values = values;
@@ -214,7 +214,7 @@ class Renderer {
     }
   }
 
-  Future<String> renderNodes(List<ParserNode> nodes) async {
+  Future<String> renderNodes(List<ParserNode?> nodes) async {
     await _renderNodes(nodes);
     return sb.toString();
   }
@@ -222,9 +222,9 @@ class Renderer {
   Future _renderPartialNode(PartialNode node) async {
     // find current indentation
     var previousNode = this.previousNode;
-    var indent;
+    String? indent;
     if (previousNode is TextNode) {
-      var text = previousNode.text;
+      var text = previousNode.text!;
       if (isInlineWhitespaces(text)) {
         // Ensure previous one was ending a line
         if (nodeNullOrHasLineFeed(getNodeAtOffset(-2))) {
@@ -233,7 +233,7 @@ class Renderer {
       }
     }
     var partialContext = RendererPartialContext(this.partialContext);
-    var template = await partial(node.text, partialContext);
+    var template = await partial!(node.text, partialContext);
 
     if (template != null) {
       final endsWithLineFeed = hasLineFeed(template);
@@ -269,39 +269,40 @@ class Renderer {
       }
       template = sb.toString();
 
-      var nodes = parse(template);
+      var nodes = parse(template)!;
       await renderChildNodes(nodes, {}, partialContext: partialContext);
     }
   }
 
-  Future _renderNodes(List<ParserNode> nodes) async {
+  Future _renderNodes(List<ParserNode?> nodes) async {
     this.nodes = nodes;
     for (currentNodeIndex = 0;
-        currentNodeIndex < nodes.length;
-        currentNodeIndex++) {
+        currentNodeIndex! < nodes.length;
+        currentNodeIndex = currentNodeIndex! + 1) {
       var node = currentNode;
 
       if (node is SectionNode) {
-        var value = await getRawVariableValue(node.variable);
+        var value = await getRawVariableValue(node.variable!);
         var key = node.key;
 
         if (value is Function) {
           // section lambda
           // get the inner content as is
-          final keyStart = node.startNode.sourceContent.end;
+          final keyStart = node.startNode!.sourceContent.end!;
           final keyEnd = node.endNode.sourceContent.start;
           key = sourceGetText(
-              node.startNode.sourceContent.source, keyStart, keyEnd);
+              node.startNode!.sourceContent.source!, keyStart, keyEnd);
 
           // call the function
           var result = await value(key);
 
           if (result is String) {
             // parse it
-            var scanner = Scanner(result)..delimiter = node.startNode.delimiter;
+            var scanner = Scanner(result)
+              ..delimiter = node.startNode!.delimiter;
             scanner.scan();
 
-            var parserNodes = parseScannerNodes(scanner.nodes);
+            var parserNodes = parseScannerNodes(scanner.nodes)!;
             await renderChildNodes(parserNodes, values);
           }
           continue;
@@ -327,7 +328,7 @@ class Renderer {
               if (!(item is Map)) {
                 values = {'.': item};
               } else {
-                values = (item as Map).cast<String, dynamic>();
+                values = item.cast<String, dynamic>();
               }
               await renderChildNodes(node.nodes, values);
             }
@@ -350,20 +351,20 @@ class Renderer {
 
   Future<String> render(String source) async {
     values ??= {};
-    var nodes = parse(source);
+    var nodes = parse(source)!;
     return await renderNodes(nodes);
   }
 }
 
-bool nodeNullOrHasLineFeed(Node node) =>
-    node == null || node is TextNode && (hasLineFeed(node.text));
+bool nodeNullOrHasLineFeed(Node? node) =>
+    node == null || node is TextNode && (hasLineFeed(node.text!));
 
 class RendererPartialContext implements PartialContext {
   @override
-  final PartialParentContext parent;
+  final PartialParentContext? parent;
 
   @override
-  var userData;
+  Object? userData;
 
   RendererPartialContext(this.parent, [this.userData]);
 }

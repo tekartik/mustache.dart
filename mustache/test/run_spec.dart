@@ -4,15 +4,16 @@ library tekartik_mustache.spec_test;
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
 bool skipAll = true;
-List<String> _filterFileBasenames;
-List<String> get filterFileBasenames => _filterFileBasenames;
+List<String>? _filterFileBasenames;
+List<String>? get filterFileBasenames => _filterFileBasenames;
 @deprecated
-set filterFileBasenames(List<String> filterFileBasenames) =>
+set filterFileBasenames(List<String>? filterFileBasenames) =>
     _filterFileBasenames = filterFileBasenames;
 
 void main() {
@@ -41,7 +42,9 @@ void _defineGroupFromFile(filename, String text) {
     });
 
     tests.forEach((t) {
-      var testDescription = StringBuffer(t['name']);
+      var name = t['name'].toString();
+      // devPrint('name: $name');
+      var testDescription = StringBuffer(name);
       testDescription.write(': ');
       testDescription.write(t['desc']);
       var template = t['template'] as String;
@@ -52,12 +55,12 @@ void _defineGroupFromFile(filename, String text) {
           StringBuffer("Could not render right '''$templateOneline'''");
       var expected = t['expected'];
 
-      var partials = t['partials'] as Map;
-      var partial = (String name, _context) {
+      var partials = t['partials'] as Map?;
+      var partial = (String? name, _context) {
         if (partials == null) {
           return null;
         }
-        return partials[name] as String;
+        return partials[name] as String?;
       };
 
       //swap the data.lambda with a dart real function
@@ -86,7 +89,7 @@ bool shouldRun(String filename) {
   // Filter out specific files?
   if (filterFileBasenames != null) {
     final fileBasename = basenameWithoutExtension(filename);
-    if (!filterFileBasenames.contains(fileBasename)) {
+    if (!filterFileBasenames!.contains(fileBasename)) {
       return false;
     }
   }

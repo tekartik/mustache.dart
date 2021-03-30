@@ -4,8 +4,8 @@ import 'import.dart';
 
 /// The main entry point
 /// [partialResolver] contains an id of the content depth
-Future<String> render(String source, Map<String, dynamic> values,
-    {PartialResolver partial, PartialContext partialContext}) async {
+Future<String?> render(String? source, Map<String, dynamic>? values,
+    {PartialResolver? partial, PartialContext? partialContext}) async {
   if (source == null) {
     return null;
   }
@@ -17,7 +17,7 @@ Future<String> render(String source, Map<String, dynamic> values,
 }
 
 abstract class PartialAnyContext {
-  PartialParentContext get parent;
+  PartialParentContext? get parent;
 }
 
 abstract class PartialParentContext extends PartialAnyContext {
@@ -31,6 +31,6 @@ abstract class PartialContext extends PartialParentContext {
   set userData(dynamic userData);
 }
 
-typedef PartialResolver = FutureOr<String> Function(
-    String name, PartialContext context);
+typedef PartialResolver = FutureOr<String>? Function(
+    String? name, PartialContext context);
 typedef Lambda = FutureOr<String> Function(String name);

@@ -6,7 +6,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/mustache.dart
       path: mustache_cli
-      ref: dart2
+      ref: null_safety
     version: '>=0.2.2'
 ```
 

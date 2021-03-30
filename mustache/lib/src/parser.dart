@@ -8,7 +8,7 @@ class RootSection extends Section {
   RootSection() : super._();
 
   @override
-  VariableNode get variable => null;
+  VariableNode? get variable => null;
 }
 
 /// parse [ScannerNode] as [ParserNode]
@@ -23,7 +23,7 @@ class Phase1Parser {
 
   // convert scanner node to parse node
   void parse(String source) {
-    var scannerNodes = scan(source);
+    var scannerNodes = scan(source)!;
     parseScannerNodes(scannerNodes);
   }
 
@@ -34,12 +34,12 @@ class Phase1Parser {
         addNode(TextNode(scannerNode.text));
       } else if (scannerNode is MustacheScannerNode) {
         var text = scannerNode.text;
-        final firstChar = scannerNode.text.substring(0, 1);
+        final firstChar = scannerNode.text!.substring(0, 1);
 
         // Return true if valie
         bool _trim(int start) {
-          text = text.substring(start).trim();
-          return text.isNotEmpty;
+          text = text!.substring(start).trim();
+          return text!.isNotEmpty;
         }
 
         switch (firstChar) {
@@ -68,11 +68,11 @@ class Phase1Parser {
             break;
           case '{':
             {
-              var lastChar = text.substring(text.length - 1);
+              var lastChar = text!.substring(text!.length - 1);
               if (lastChar == '}') {
-                text = text.substring(1, text.length - 1);
+                text = text!.substring(1, text!.length - 1);
               } else {
-                text = text.substring(1);
+                text = text!.substring(1);
               }
               if (_trim(0)) {
                 addNode(NoEscapeVariableNode(text));
@@ -90,11 +90,11 @@ class Phase1Parser {
             }
             break;
           case '=':
-            var lastChar = text.substring(text.length - 1);
+            var lastChar = text!.substring(text!.length - 1);
             if (lastChar == '}') {
-              text = text.substring(1, text.length - 1);
+              text = text!.substring(1, text!.length - 1);
             } else {
-              text = text.substring(1);
+              text = text!.substring(1);
             }
             if (_trim(0)) {
               addNode(DelimitersNode(text));
@@ -112,11 +112,11 @@ class Phase1Parser {
 }
 
 class Section {
-  SectionNode node;
+  SectionNode? node;
 
   List<ParserNode> currentLineNodes = [];
 
-  List<ParserNode> get nodes => node.nodes;
+  List<ParserNode?> get nodes => node!.nodes;
 
   Section._() {
     node = SectionNode(null);
@@ -127,10 +127,10 @@ class Section {
         startNode: startNode, inverted: startNode.inverted);
   }
 
-  VariableNode get variable => node.variable;
+  VariableNode? get variable => node!.variable;
 
-  void add(ParserNode node) {
-    this.node.add(node);
+  void add(ParserNode? node) {
+    this.node!.add(node);
   }
 }
 
@@ -148,7 +148,7 @@ class Phase2Parser {
       var node = sourceNodes[i];
       currentLineNodes.add(node);
 
-      if ((node is TextNode) && (hasLineFeed(node.text))) {
+      if ((node is TextNode) && (hasLineFeed(node.text!))) {
         flushLine();
       }
     }
@@ -167,7 +167,7 @@ class Phase2Parser {
             hasStandaloneNode = false;
             break;
           }
-        } else if (!isWhitespaces(node.text)) {
+        } else if (!isWhitespaces(node.text!)) {
           hasStandaloneNode = false;
           break;
         }
@@ -190,7 +190,7 @@ class Phase2Parser {
     }
     for (var node in currentLineNodes) {
       if (hasStandaloneNode) {
-        if ((node is TextNode) && isWhitespaces(node.text)) {
+        if ((node is TextNode) && isWhitespaces(node.text!)) {
           // Special partial, remove ending only
           if (hasPartial && !isLineFeed(node.text)) {
             // keep
@@ -212,7 +212,7 @@ class Phase2Parser {
 // Handle sections
 class Phase3Parser {
   final List<ParserNode> sourceNodes;
-  List<ParserNode> nodes = [];
+  List<ParserNode?> nodes = [];
 
   Phase3Parser(this.sourceNodes);
 
@@ -224,7 +224,7 @@ class Phase3Parser {
 
     // no end line
 
-    void _addNode(ParserNode node) {
+    void _addNode(ParserNode? node) {
       var section = sections.last;
       section.add(node);
     }
@@ -233,7 +233,7 @@ class Phase3Parser {
       // truncate of the first found
       for (var i = sections.length - 1; i >= index; i--) {
         var section = sections[i];
-        section.node.endNode = endNode;
+        section.node!.endNode = endNode;
       }
       sections = sections.sublist(0, index);
     }
@@ -252,7 +252,7 @@ class Phase3Parser {
         // ignoring root
         for (var i = sections.length - 1; i > 0; i--) {
           var section = sections[i];
-          if (section.variable.name == variable) {
+          if (section.variable!.name == variable) {
             _endSection(i, node);
             break;
           }
@@ -267,43 +267,43 @@ class Phase3Parser {
 }
 
 abstract class ParserNode extends Node {
-  ParserNode(String text) : super(text);
+  ParserNode(String? text) : super(text);
 }
 
 class VariableNode extends ParserNode {
-  VariableNode(String text) : super(text);
-  String get name => text;
+  VariableNode(String? text) : super(text);
+  String? get name => text;
 }
 
 class NoEscapeVariableNode extends VariableNode {
-  NoEscapeVariableNode(String text) : super(text);
+  NoEscapeVariableNode(String? text) : super(text);
 }
 
 class CommentNode extends ParserNode {
-  CommentNode(String text) : super(text);
+  CommentNode(String? text) : super(text);
 }
 
 class DelimitersNode extends CommentNode {
-  DelimitersNode(String text) : super(text);
+  DelimitersNode(String? text) : super(text);
 }
 
 class TextNode extends ParserNode {
-  TextNode(String text) : super(text);
+  TextNode(String? text) : super(text);
 }
 
 class SectionNode extends ParserNode {
-  SourceContent innerContent;
-  final VariableNode variable;
-  final SectionStartNode startNode;
-  SectionEndNode endNode;
-  final bool inverted;
-  final List<ParserNode> nodes = [];
+  SourceContent? innerContent;
+  final VariableNode? variable;
+  final SectionStartNode? startNode;
+  late SectionEndNode endNode;
+  final bool? inverted;
+  final List<ParserNode?> nodes = [];
 
-  String get key => variable.name;
+  String? get key => variable!.name;
 
   SectionNode(this.variable, {this.startNode, this.inverted}) : super(null);
 
-  void add(ParserNode node) {
+  void add(ParserNode? node) {
     nodes.add(node);
   }
 
@@ -331,36 +331,33 @@ class SectionNode extends ParserNode {
 class SectionDelimiterNode extends ParserNode {
   final SourceContent sourceContent;
 
-  SectionDelimiterNode(this.sourceContent, String text) : super(text);
+  SectionDelimiterNode(this.sourceContent, String? text) : super(text);
 }
 
 class SectionStartNode extends SectionDelimiterNode {
-  final ScannerDelimiter delimiter;
-  final bool inverted;
+  final ScannerDelimiter? delimiter;
+  final bool? inverted;
 
-  SectionStartNode(this.delimiter, SourceContent source, String text,
+  SectionStartNode(this.delimiter, SourceContent source, String? text,
       {this.inverted})
       : super(source, text);
 }
 
 class SectionEndNode extends SectionDelimiterNode {
-  SectionEndNode(SourceContent source, String text) : super(source, text);
+  SectionEndNode(SourceContent source, String? text) : super(source, text);
 }
 
 class PartialNode extends ParserNode {
-  PartialNode(String text) : super(text);
+  PartialNode(String? text) : super(text);
 }
 
 List<ParserNode> parseScannerNodePhase1(List<ScannerNode> scannerNodes) {
-  if (scannerNodes == null) {
-    return null;
-  }
   var source = Phase1Parser();
   source.parseScannerNodes(scannerNodes);
   return source.nodes;
 }
 
-List<ParserNode> parsePhase1(String text) {
+List<ParserNode>? parsePhase1(String? text) {
   if (text == null) {
     return null;
   }
@@ -369,10 +366,10 @@ List<ParserNode> parsePhase1(String text) {
   return source.nodes;
 }
 
-List<ParserNode> parsePhase2(String text) =>
+List<ParserNode>? parsePhase2(String? text) =>
     parseNodesPhase2(parsePhase1(text));
 
-List<ParserNode> parseNodesPhase2(List<ParserNode> nodes) {
+List<ParserNode>? parseNodesPhase2(List<ParserNode>? nodes) {
   if (nodes == null) {
     return null;
   }
@@ -381,7 +378,7 @@ List<ParserNode> parseNodesPhase2(List<ParserNode> nodes) {
   return parser.nodes;
 }
 
-List<ParserNode> parseNodesPhase3(List<ParserNode> nodes) {
+List<ParserNode?>? parseNodesPhase3(List<ParserNode>? nodes) {
   if (nodes == null) {
     return null;
   }
@@ -390,7 +387,7 @@ List<ParserNode> parseNodesPhase3(List<ParserNode> nodes) {
   return parser.nodes;
 }
 
-List<ParserNode> parse(String text) => parseNodesPhase3(parsePhase2(text));
+List<ParserNode?>? parse(String? text) => parseNodesPhase3(parsePhase2(text));
 
-List<ParserNode> parseScannerNodes(List<ScannerNode> scannerNodes) =>
+List<ParserNode?>? parseScannerNodes(List<ScannerNode> scannerNodes) =>
     parseNodesPhase3(parseNodesPhase2(parseScannerNodePhase1(scannerNodes)));

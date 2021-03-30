@@ -16,9 +16,9 @@ var nlRegExp = RegExp('\\n');
 class ScannerDelimiter {
   final String open;
   final String close;
-  RegExp openRegExp;
-  RegExp closeRegExp;
-  bool isDefault;
+  late RegExp openRegExp;
+  late RegExp closeRegExp;
+  bool? isDefault;
 
   ScannerDelimiter(this.open, this.close) {
     openRegExp = RegExp(RegExp.escape(open));
@@ -33,24 +33,24 @@ class DefaultScannerDelimiter extends ScannerDelimiter {
 }
 
 abstract class ScannerNode extends Node {
-  ScannerNode(String text) : super(text);
+  ScannerNode(String? text) : super(text);
 }
 
 class TextScannerNode extends ScannerNode {
-  TextScannerNode(String text) : super(text);
+  TextScannerNode(String? text) : super(text);
 }
 
 class MustacheScannerNode extends ScannerNode
     with SourceMixin
     implements SourceContent {
   @override
-  final String source;
+  final String? source;
   @override
-  final int start;
+  final int? start;
   @override
-  final int end;
+  final int? end;
 
-  final ScannerDelimiter delimiter;
+  final ScannerDelimiter? delimiter;
 
   MustacheScannerNode(
       this.source, this.start, this.end, this.delimiter, String text)
@@ -71,10 +71,10 @@ class Scanner extends Object with SourceMixin {
   Scanner(this.source) : end = source.length;
 
   // set before the opening delimited
-  int outerStart;
+  int? outerStart;
   int index = 0;
   final int end;
-  ScannerDelimiter delimiter = DefaultScannerDelimiter();
+  ScannerDelimiter? delimiter = DefaultScannerDelimiter();
 
   bool get atEnd => index == end;
 
@@ -83,7 +83,7 @@ class Scanner extends Object with SourceMixin {
 
   void scan() {
     while (!atEnd) {
-      ScannerNode node = scanOpen();
+      ScannerNode? node = scanOpen();
       if (node != null) {
         nodes.add(node);
       }
@@ -96,12 +96,12 @@ class Scanner extends Object with SourceMixin {
     }
   }
 
-  TextScannerNode scanOpen() {
+  TextScannerNode? scanOpen() {
     atOpenDelimiter = false;
 
     final start = index;
     var text = source.substring(start);
-    var end = text.indexOf(delimiter.openRegExp);
+    var end = text.indexOf(delimiter!.openRegExp);
 
     /*
     // We split by lines
@@ -136,7 +136,7 @@ class Scanner extends Object with SourceMixin {
 
       end += start;
       outerStart = end;
-      index = outerStart + delimiter.open.length;
+      index = outerStart! + delimiter!.open.length;
 
       if (end == start) {
         return null;
@@ -145,7 +145,7 @@ class Scanner extends Object with SourceMixin {
     return TextScannerNode(getSourceText(start, end));
   }
 
-  MustacheScannerNode scanClose() {
+  MustacheScannerNode? scanClose() {
     var start = index;
     var text = source.substring(start);
 
@@ -153,13 +153,13 @@ class Scanner extends Object with SourceMixin {
     int end;
 
     // handle triple escape only for default delimiters
-    if (delimiter.isDefault) {
+    if (delimiter!.isDefault!) {
       // Are we in a triple escape mode?
       defaultNoEscape = text.startsWith(defaultNoEscapeDelimiterRegExp);
     }
     end = source.substring(start).indexOf(defaultNoEscape
         ? defaultNoEscapeCloseDelimiterRegExp
-        : delimiter.closeRegExp);
+        : delimiter!.closeRegExp);
     if (end == -1) {
       end = this.end;
       index = end;
@@ -169,7 +169,7 @@ class Scanner extends Object with SourceMixin {
         end++;
       }
       end += start;
-      index = end + delimiter.close.length;
+      index = end + delimiter!.close.length;
 
       // trim
       while (isInlineWhitespace(getChar(start))) {
@@ -243,7 +243,7 @@ class Scanner extends Object with SourceMixin {
   final List<ScannerNode> nodes = [];
 }
 
-List<ScannerNode> scan(String source) {
+List<ScannerNode>? scan(String? source) {
   if (source == null) {
     return null;
   }
