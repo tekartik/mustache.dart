@@ -74,9 +74,10 @@ class Renderer {
         return htmlEscape.convert(value);
       }
     } else if (value is Function) {
+      // ignore: avoid_dynamic_calls
       var result = await value(key);
       if (result is bool) {
-        throw 'TODO';
+        throw UnsupportedError('TODO');
       } else if (result is String) {
         var renderer = Renderer()
           ..values = values
@@ -294,6 +295,7 @@ class Renderer {
               node.startNode!.sourceContent.source!, keyStart, keyEnd);
 
           // call the function
+          // ignore: avoid_dynamic_calls
           var result = await value(key);
 
           if (result is String) {

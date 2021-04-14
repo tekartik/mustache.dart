@@ -27,9 +27,9 @@ void main() {
   });
 }
 
-void _defineGroupFromFile(filename, String text) {
-  var json = loadYaml(text);
-  var tests = json['tests'];
+void _defineGroupFromFile(String filename, String text) {
+  var json = loadYaml(text) as Map;
+  var tests = json['tests'] as List;
   filename = filename.substring(filename.lastIndexOf('/') + 1);
   group('Specs of $filename', () {
     //Make sure that we reset the state of the Interpolation - Multiple Calls test
@@ -41,21 +41,22 @@ void _defineGroupFromFile(filename, String text) {
       callable.reset();
     });
 
-    tests.forEach((t) {
-      var name = t['name'].toString();
+    tests.forEach((_t) {
+      var map = _t as Map;
+      var name = map['name'].toString();
       // devPrint('name: $name');
       var testDescription = StringBuffer(name);
       testDescription.write(': ');
-      testDescription.write(t['desc']);
-      var template = t['template'] as String;
-      var data = Map<String, dynamic>.from(t['data'] as Map);
+      testDescription.write(map['desc']);
+      var template = map['template'] as String;
+      var data = Map<String, dynamic>.from(map['data'] as Map);
       var templateOneline =
           template.replaceAll('\n', '\\n').replaceAll('\r', '\\r');
       var reason =
           StringBuffer("Could not render right '''$templateOneline'''");
-      var expected = t['expected'];
+      var expected = map['expected'];
 
-      var partials = t['partials'] as Map?;
+      var partials = map['partials'] as Map?;
       var partial = (String? name, _context) {
         if (partials == null) {
           return null;
@@ -65,7 +66,7 @@ void _defineGroupFromFile(filename, String text) {
 
       //swap the data.lambda with a dart real function
       if (data['lambda'] != null) {
-        data['lambda'] = lambdas[t['name']];
+        data['lambda'] = lambdas[map['name']];
       }
       reason.write(" with '$data'");
 
@@ -106,7 +107,7 @@ class _DummyCallableWithState {
   void reset() => _callCounter = 0;
 }
 
-dynamic lambdas = {
+var lambdas = {
   'Interpolation': (t) => 'world',
   'Interpolation - Expansion': (t) => '{{planet}}',
   'Interpolation - Alternate Delimiters': (t) => '|planet| => {{planet}}',
