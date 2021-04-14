@@ -1,14 +1,14 @@
 import 'import.dart';
 
 abstract class SourceMixin {
-  String get source;
+  String? get source;
 
   String getChar(int index) {
-    return source.substring(index, index + 1);
+    return source!.substring(index, index + 1);
   }
 
   int trimStart(int start) {
-    while (start < source.length && isInlineWhitespace(getChar(start))) {
+    while (start < source!.length && isInlineWhitespace(getChar(start))) {
       start++;
     }
 
@@ -22,19 +22,20 @@ abstract class SourceMixin {
     return end;
   }
 
-  String getSourceText(int start, int end) => sourceGetText(source, start, end);
+  String getSourceText(int start, int end) =>
+      sourceGetText(source!, start, end);
 }
 
-String sourceGetText(String source, int start, int end) {
+String sourceGetText(String source, int start, int? end) {
   return source.substring(start, end);
 }
 
 abstract class SourceContent {
   factory SourceContent(String source, int start, int end) =>
       _SourceContent(source, start, end);
-  String get source;
-  int get start;
-  int get end;
+  String? get source;
+  int? get start;
+  int? get end;
 }
 
 class _SourceContent implements SourceContent {

@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 // Mustache node
 ScannerNode mn(String text) => MustacheScannerNode.withText(text);
-ScannerNode tn(String text) => TextScannerNode(text);
+ScannerNode tn(String? text) => TextScannerNode(text);
 
 void main() {
   group('scanner', () {
@@ -77,9 +77,9 @@ void main() {
       test('new_delimiter', () async {
         var scanner = Scanner('{{=[ ]=}}');
         scanner.scan();
-        expect(scanner.delimiter.open, '[');
-        expect(scanner.delimiter.close, ']');
-        expect(scanner.delimiter.isDefault, false);
+        expect(scanner.delimiter!.open, '[');
+        expect(scanner.delimiter!.close, ']');
+        expect(scanner.delimiter!.isDefault, false);
       });
       test('new_delimiter_node', () async {
         expect(scan('{{=[ ]=}}[nodex]'), [mn('=[ ]='), mn('nodex')]);

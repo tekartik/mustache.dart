@@ -9,14 +9,17 @@ class MustacheFs {
 
   MustacheFs(this.fs);
 
-  Future<String> renderFile(String path,
-      {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
+  Future<String?> renderFile(String path,
+      {Map<String, dynamic>? values,
+      String? yamlPath,
+      String? jsonPath}) async {
     if (values == null) {
       if (yamlPath != null) {
-        values = (await loadYaml(await fs.file(yamlPath).readAsString()) as Map)
-            ?.cast<String, dynamic>();
+        values =
+            (await loadYaml(await fs.file(yamlPath).readAsString()) as Map?)
+                ?.cast<String, dynamic>();
       } else if (jsonPath != null) {
-        values = (json.decode(await fs.file(jsonPath).readAsString()) as Map)
+        values = (json.decode(await fs.file(jsonPath).readAsString()) as Map?)
             ?.cast<String, dynamic>();
       }
     }
@@ -25,16 +28,16 @@ class MustacheFs {
     // init our stack
 
     return await render(source, values, partialContext: PartialContext(path),
-        partial: (String partial, PartialContext context) async {
-      var path = partial;
+        partial: (String? partial, PartialContext context) async {
+      var path = partial!;
 
-      var contextPath = context.parent.userData as String;
+      var contextPath = context.parent!.userData as String?;
 
       var ctx = fs.path;
       // try to resolve from current file
 
       if (ctx.isRelative(path)) {
-        path = ctx.normalize(ctx.join(ctx.dirname(contextPath), path));
+        path = ctx.normalize(ctx.join(ctx.dirname(contextPath!), path));
       }
       // set current path to the context
       context.userData = path;
@@ -45,8 +48,8 @@ class MustacheFs {
   }
 }
 
-Future<String> renderFile(FileSystem fs, String path,
-    {Map<String, dynamic> values, String yamlPath, String jsonPath}) async {
+Future<String?> renderFile(FileSystem fs, String path,
+    {Map<String, dynamic>? values, String? yamlPath, String? jsonPath}) async {
   var mustacheFs = MustacheFs(fs);
   return await mustacheFs.renderFile(path,
       values: values, yamlPath: yamlPath, jsonPath: jsonPath);

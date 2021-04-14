@@ -18,7 +18,7 @@ bool isInlineWhitespaces(String text) {
 
 bool isWhitespaces(String text) => text.trim().isEmpty;
 
-bool isLineFeed(String text) => text == nl || text == crnl;
+bool isLineFeed(String? text) => text == nl || text == crnl;
 
 // only valid for node text that always have line cut
 bool hasLineFeed(String text) => text.endsWith(nl);

@@ -12,15 +12,12 @@ class FileSystemStorage extends FileSystemNone {
 
   FileSystemStorage(this.bucket);
   @override
-  Directory directory(String path) => DirectoryStorage(this, path);
+  Directory directory(String? path) => DirectoryStorage(this, path!);
 
   @override
-  File file(String path) {
-    var storageFile = bucket.file(path);
-    if (storageFile != null) {
-      return FileStorage(this, path, storageFile);
-    }
-    return null;
+  File file(String? path) {
+    var storageFile = bucket.file(path!);
+    return FileStorage(this, path, storageFile);
   }
 
   @override
