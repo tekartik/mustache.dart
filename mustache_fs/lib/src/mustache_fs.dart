@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:tekartik_mustache/mustache.dart';
+
 import 'package:fs_shim/fs.dart';
+import 'package:tekartik_mustache/mustache.dart';
 import 'package:yaml/yaml.dart';
 
 class MustacheFs {

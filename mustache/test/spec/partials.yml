@@ -37,7 +37,7 @@ tests:
 
   - name: Recursion
     desc: The greater-than operator should properly recurse.
-    data: { content: "X", nodes: [ { content: "Y", nodes: [] } ] }
+    data: { content: "X", nodes: [ { content: "Y", nodes: [ ] } ] }
     template: '{{>node}}'
     partials: { node: '{{content}}<{{#nodes}}{{>node}}{{/nodes}}>' }
     expected: 'X<Y<>>'
@@ -69,7 +69,7 @@ tests:
     desc: Standalone tags should not require a newline to precede them.
     data: { }
     template: "  {{>partial}}\n>"
-    partials: { partial: ">\n>"}
+    partials: { partial: ">\n>" }
     expected: "  >\n  >>"
 
   - name: Standalone Without Newline

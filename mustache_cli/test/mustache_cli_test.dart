@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart';
-import 'package:test/test.dart';
 import 'package:tekartik_mustache_cli/mustache_cli.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('basic', () {

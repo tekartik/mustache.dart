@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:args/args.dart';
 import 'package:fs_shim/fs_io.dart';
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:yaml/yaml.dart';
 import 'package:tekartik_mustache_fs/mustache_fs.dart';
+import 'package:yaml/yaml.dart';
 
 const String versionFlag = 'version';
 const String helpFlag = 'help';

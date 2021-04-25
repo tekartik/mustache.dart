@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:fs_shim/fs.dart';
+import 'package:fs_shim/fs_none.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_storage/storage.dart' as storage;
-import 'package:fs_shim/fs_none.dart';
 
 class FileSystemStorage extends FileSystemNone {
   final storage.Bucket bucket;
 
   FileSystemStorage(this.bucket);
+
   @override
   Directory directory(String? path) => DirectoryStorage(this, path!);
 

@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 
 // Mustache node
 ScannerNode mn(String text) => MustacheScannerNode.withText(text);
+
 ScannerNode tn(String? text) => TextScannerNode(text);
 
 void main() {
