@@ -55,6 +55,7 @@ class MustacheScannerNode extends ScannerNode
   MustacheScannerNode(
       this.source, this.start, this.end, this.delimiter, String text)
       : super(text);
+
   MustacheScannerNode.withText(String text)
       : source = null,
         start = null,

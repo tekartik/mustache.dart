@@ -3,6 +3,7 @@ library tekartik_mustache.spec_test;
 
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_mustache/mustache.dart';
@@ -11,7 +12,9 @@ import 'package:yaml/yaml.dart';
 
 bool skipAll = true;
 List<String>? _filterFileBasenames;
+
 List<String>? get filterFileBasenames => _filterFileBasenames;
+
 @deprecated
 set filterFileBasenames(List<String>? filterFileBasenames) =>
     _filterFileBasenames = filterFileBasenames;

@@ -1,7 +1,7 @@
-import 'package:tekartik_mustache_fs/mustache_fs.dart';
-import 'package:test/test.dart';
 import 'package:fs_shim/fs.dart';
 import 'package:fs_shim/fs_memory.dart';
+import 'package:tekartik_mustache_fs/mustache_fs.dart';
+import 'package:test/test.dart';
 
 void main() {
   var fs = newFileSystemMemory();

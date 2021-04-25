@@ -32,11 +32,11 @@ dev_dependencies:
   process_run: '>=0.10.2'
 
 dependency_overrides:
-#  fs_shim:
-#    path: ../../../../github.com/tekartik/fs_shim.dart/fs
-#    git:
-#      url: git://github.com/tekartik/fs_shim.dart
-#      path: fs
+  #  fs_shim:
+  #    path: ../../../../github.com/tekartik/fs_shim.dart/fs
+  #    git:
+  #      url: git://github.com/tekartik/fs_shim.dart
+  #      path: fs
   tekartik_mustache:
     path: ../mustache
 #  tekartik_firebase_sembast:

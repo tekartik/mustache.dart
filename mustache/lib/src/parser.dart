@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:tekartik_mustache/src/node.dart';
 import 'package:tekartik_mustache/src/scanner.dart';
 import 'package:tekartik_mustache/src/source.dart';
+
 import 'import.dart';
 
 class RootSection extends Section {
@@ -272,6 +273,7 @@ abstract class ParserNode extends Node {
 
 class VariableNode extends ParserNode {
   VariableNode(String? text) : super(text);
+
   String? get name => text;
 }
 
