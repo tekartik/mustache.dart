@@ -15,7 +15,7 @@ List<String>? _filterFileBasenames;
 
 List<String>? get filterFileBasenames => _filterFileBasenames;
 
-@deprecated
+@Deprecated('Use with care')
 set filterFileBasenames(List<String>? filterFileBasenames) =>
     _filterFileBasenames = filterFileBasenames;
 
@@ -44,7 +44,7 @@ void _defineGroupFromFile(String filename, String text) {
       callable.reset();
     });
 
-    tests.forEach((_t) {
+    for (var _t in tests) {
       var map = _t as Map;
       var name = map['name'].toString();
       // devPrint('name: $name');
@@ -60,12 +60,12 @@ void _defineGroupFromFile(String filename, String text) {
       var expected = map['expected'];
 
       var partials = map['partials'] as Map?;
-      var partial = (String? name, _context) {
+      String? partial(String? name, _context) {
         if (partials == null) {
           return null;
         }
         return partials[name] as String?;
-      };
+      }
 
       //swap the data.lambda with a dart real function
       if (data['lambda'] != null) {
@@ -81,7 +81,7 @@ void _defineGroupFromFile(String filename, String text) {
         expect(await render(template, data, partial: partial), expected,
             reason: reason.toString());
       });
-    });
+    }
   }, skip: skipAll);
 }
 
