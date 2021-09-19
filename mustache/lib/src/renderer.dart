@@ -46,7 +46,7 @@ class Renderer {
       return _getRawKeyValue(key);
     }
 
-    var parts = key!.split('\.');
+    var parts = key!.split('.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return _getDottedKeyValue(parts);
@@ -107,7 +107,7 @@ class Renderer {
       return await _fixValue(_getRawKeyValue(key));
     }
 
-    var parts = key!.split('\.');
+    var parts = key!.split('.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
         return await _fixValue(_getDottedKeyValue(parts));
@@ -328,7 +328,7 @@ class Renderer {
           } else if (value is List) {
             for (var item in value) {
               Map<String, dynamic> values;
-              if (!(item is Map)) {
+              if (item is! Map) {
                 values = {'.': item};
               } else {
                 values = item.cast<String, dynamic>();

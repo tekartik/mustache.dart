@@ -9,8 +9,8 @@ String closeDelimiterDefault = '}}';
 String noEscapeDelimiter = '{';
 int noEscapeDelimiterLength = noEscapeDelimiter.length;
 
-var defaultNoEscapeDelimiterRegExp = RegExp('\{');
-var defaultNoEscapeCloseDelimiterRegExp = RegExp('\}\}\}');
+var defaultNoEscapeDelimiterRegExp = RegExp('{');
+var defaultNoEscapeCloseDelimiterRegExp = RegExp('}}}');
 var nlRegExp = RegExp('\\n');
 
 class ScannerDelimiter {

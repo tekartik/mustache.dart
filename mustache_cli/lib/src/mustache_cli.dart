@@ -83,7 +83,7 @@ Future mustacheMain(List<String> arguments) async {
     }
   }
 
-  if (!(data is Map)) {
+  if (data is! Map) {
     stderr.writeln('source data is not a map');
     throw exception ?? StateError('source data not a map');
   }
