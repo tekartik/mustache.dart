@@ -48,10 +48,7 @@ class FileStorage extends FileSystemEntityStorage
   @override
   Future<Uint8List> readAsBytes() async {
     var list = await nativeInstance.download();
-    if (list is Uint8List) {
-      return list;
-    }
-    return Uint8List.fromList(list);
+    return list;
   }
 
   @override
