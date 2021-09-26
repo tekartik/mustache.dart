@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:fs_shim/fs_io.dart';
