@@ -9,15 +9,15 @@ dependencies:
   fs_shim: '>=0.8.1'
   tekartik_mustache:
     git:
-      url: git://github.com/tekartik/mustache.dart
+      url: https://github.com/tekartik/mustache.dart
       path: mustache
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.2.1'
   tekartik_mustache_fs:
     git:
-      url: git://github.com/tekartik/mustache.dart
+      url: https://github.com/tekartik/mustache.dart
       path: mustache_fs
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.2.1'
   args: any
   pub_semver: any

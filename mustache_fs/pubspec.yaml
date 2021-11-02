@@ -9,15 +9,15 @@ dependencies:
   fs_shim: '>=0.11.0+1'
   tekartik_mustache:
     git:
-      url: git://github.com/tekartik/mustache.dart
+      url: https://github.com/tekartik/mustache.dart
       path: mustache
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.2.1'
   tekartik_firebase_storage:
     git:
-      url: git://github.com/tekartik/firebase_storage.dart
+      url: https://github.com/tekartik/firebase_storage.dart
       path: storage
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.7'
   yaml: any
 
@@ -25,9 +25,9 @@ dev_dependencies:
   test: any
   tekartik_firebase_storage_fs:
     git:
-      url: git://github.com/tekartik/firebase_storage.dart
+      url: https://github.com/tekartik/firebase_storage.dart
       path: storage_fs
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.7'
   process_run: '>=0.10.2'
 
@@ -35,11 +35,11 @@ dependency_overrides:
   #  fs_shim:
   #    path: ../../../../github.com/tekartik/fs_shim.dart/fs
   #    git:
-  #      url: git://github.com/tekartik/fs_shim.dart
+  #      url: https://github.com/tekartik/fs_shim.dart
   #      path: fs
   tekartik_mustache:
     path: ../mustache
 #  tekartik_firebase_sembast:
 #    git:
-#      url: git://github.com/tekartik/firebase.dart
+#      url: https://github.com/tekartik/firebase.dart
 #      path: firebase_sembast

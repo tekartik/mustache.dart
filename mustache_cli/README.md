@@ -4,9 +4,9 @@
 dependencies:
   tekartik_mustache_cli:
     git:
-      url: git://github.com/tekartik/mustache.dart
+      url: https://github.com/tekartik/mustache.dart
       path: mustache_cli
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.2.2'
 ```
 
