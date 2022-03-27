@@ -20,7 +20,7 @@ dependencies:
       ref: dart2_3
     version: '>=0.3.7'
   yaml: any
-
+  path:
 dev_dependencies:
   test: any
   tekartik_firebase_storage_fs:

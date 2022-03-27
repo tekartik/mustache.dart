@@ -174,13 +174,13 @@ void main() {
     test('simple_partial', () async {
       expect(
           await render('{{>partial}}', null,
-              partial: (String? _, _ctx) => 'value'),
+              partial: (String? source, map) => 'value'),
           'value');
     });
     test('partial_var', () async {
       expect(
           await render('{{>partial}}', {'var': 'value'},
-              partial: (String? _, _ctx) => '{{var}}'),
+              partial: (String? source, map) => '{{var}}'),
           'value');
     });
     test('sub_partial_var', () async {
@@ -201,7 +201,8 @@ void main() {
       // from spec
       // '\r\n' should be considered a newline for standalone tags.'
       expect(
-          await render('{{>p}}\r\n|', null, partial: (String? _, _ctx) => '>'),
+          await render('{{>p}}\r\n|', null,
+              partial: (String? source, map) => '>'),
           '>|');
     });
     test('partial_no_previous_line', () async {
@@ -209,7 +210,7 @@ void main() {
       // Standalone tags should not require a newline to precede them.
       expect(
           await render('  {{>p}}\n>', null,
-              partial: (String? _, _ctx) => '>\n>'),
+              partial: (String? _, map) => '>\n>'),
           '  >\n  >>');
     });
     test('partial_no_previous_line', () async {
@@ -217,15 +218,14 @@ void main() {
       // Standalone tags should not require a newline to precede them.
       expect(
           await render('  {{>p}}\n>', null,
-              partial: (String? _, _ctx) => '>\n>'),
+              partial: (String? source, map) => '>\n>'),
           '  >\n  >>');
     });
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
       expect(
-          await render('| {{>p}}\n', null,
-              partial: (String? _, _ctx) => '>\n>'),
+          await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
           '| >\n>\n');
     });
 
@@ -233,8 +233,7 @@ void main() {
       // from spec
       // Whitespace should be left untouched.
       expect(
-          await render('| {{>p}}\n', null,
-              partial: (String? _, _ctx) => '>\n>'),
+          await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
           '| >\n>\n');
     });
 
@@ -243,7 +242,7 @@ void main() {
       // Whitespace should be left untouched.
       expect(
           await render(' {{data}} {{>p}}\n', {'data': '|'},
-              partial: (String? _, _ctx) => '>\n>'),
+              partial: (String? _, map) => '>\n>'),
           ' | >\n>\n');
     });
     test('partial_root_depth', () async {

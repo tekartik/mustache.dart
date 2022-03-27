@@ -12,8 +12,9 @@ dependencies:
       url: https://github.com/tekartik/common_utils.dart
       ref: dart2_3
     version: '>=0.10.7'
-
+  collection:
 dev_dependencies:
   test: any
   yaml: any
   process_run: '>=0.10.9-dev.1'
+  path:
