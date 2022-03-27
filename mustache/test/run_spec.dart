@@ -44,8 +44,8 @@ void _defineGroupFromFile(String filename, String text) {
       callable.reset();
     });
 
-    for (var _t in tests) {
-      var map = _t as Map;
+    for (var localTest in tests) {
+      var map = localTest as Map;
       var name = map['name'].toString();
       // devPrint('name: $name');
       var testDescription = StringBuffer(name);
@@ -60,7 +60,7 @@ void _defineGroupFromFile(String filename, String text) {
       var expected = map['expected'];
 
       var partials = map['partials'] as Map?;
-      String? partial(String? name, _context) {
+      String? partial(String? name, context) {
         if (partials == null) {
           return null;
         }
