@@ -23,14 +23,14 @@ Future mustacheMain(List<String> arguments) async {
   parser.addOption(optionOut, abbr: 'o', help: 'Destination file');
   var result = parser.parse(arguments);
 
-  void _usage() {
+  void printUsage() {
     print('mustache_cli <yaml_or_json> <template>');
     print(parser.usage);
     exit(0);
   }
 
   if (result[helpFlag] == true) {
-    _usage();
+    printUsage();
   }
   if (result[versionFlag] == true) {
     print('version $version');
@@ -40,7 +40,7 @@ Future mustacheMain(List<String> arguments) async {
   final outFilePath = result[optionOut] as String?;
   var rest = result.rest;
   if (rest.length != 2) {
-    _usage();
+    printUsage();
   }
 
   var dataFilePath = rest[0];
@@ -54,7 +54,7 @@ Future mustacheMain(List<String> arguments) async {
   Object? exception;
   var dataContent = await fs.file(dataFilePath).readAsString();
 
-  void _try(dynamic Function(String encoded) decode) {
+  void tryDecode(dynamic Function(String encoded) decode) {
     try {
       data = decode(dataContent);
     } catch (e) {
@@ -62,23 +62,23 @@ Future mustacheMain(List<String> arguments) async {
     }
   }
 
-  void _tryJson() => _try(json.decode);
-  void _tryYaml() => _try(loadYaml);
+  void tryJson() => tryDecode(json.decode);
+  void tryYaml() => tryDecode(loadYaml);
 
   if (canBeJson) {
-    _tryJson();
+    tryJson();
   } else if (canBeYaml) {
-    _tryYaml();
+    tryYaml();
   }
 
 // failing try everything
   if (data == null) {
     if (!canBeJson) {
-      _tryJson();
+      tryJson();
     }
 
     if (data == null && !canBeYaml) {
-      _tryYaml();
+      tryYaml();
     }
   }
 
