@@ -38,32 +38,32 @@ class Phase1Parser {
         final firstChar = scannerNode.text!.substring(0, 1);
 
         // Return true if valie
-        bool _trim(int start) {
+        bool trim(int start) {
           text = text!.substring(start).trim();
           return text!.isNotEmpty;
         }
 
         switch (firstChar) {
           case '!':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(CommentNode(text));
             }
 
             break;
           case '#':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(
                   SectionStartNode(scannerNode.delimiter, scannerNode, text));
             }
             break;
           case '^':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(SectionStartNode(scannerNode.delimiter, scannerNode, text,
                   inverted: true));
             }
             break;
           case '/':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(SectionEndNode(scannerNode, text));
             }
             break;
@@ -75,18 +75,18 @@ class Phase1Parser {
               } else {
                 text = text!.substring(1);
               }
-              if (_trim(0)) {
+              if (trim(0)) {
                 addNode(NoEscapeVariableNode(text));
               }
             }
             break;
           case '&':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(NoEscapeVariableNode(text));
             }
             break;
           case '>':
-            if (_trim(1)) {
+            if (trim(1)) {
               addNode(PartialNode(text));
             }
             break;
@@ -97,13 +97,13 @@ class Phase1Parser {
             } else {
               text = text!.substring(1);
             }
-            if (_trim(0)) {
+            if (trim(0)) {
               addNode(DelimitersNode(text));
             }
             break;
 
           default:
-            if (_trim(0)) {
+            if (trim(0)) {
               addNode(VariableNode(text));
             }
         }
@@ -225,12 +225,12 @@ class Phase3Parser {
 
     // no end line
 
-    void _addNode(ParserNode? node) {
+    void addNode(ParserNode? node) {
       var section = sections.last;
       section.add(node);
     }
 
-    void _endSection(int index, SectionEndNode endNode) {
+    void endSection(int index, SectionEndNode endNode) {
       // truncate of the first found
       for (var i = sections.length - 1; i >= index; i--) {
         var section = sections[i];
@@ -244,7 +244,7 @@ class Phase3Parser {
       if (node is SectionStartNode) {
         var section = Section(node);
         // first add the node then the section
-        _addNode(section.node);
+        addNode(section.node);
         sections.add(section);
       } else if (node is SectionEndNode) {
         var variableNode = VariableNode(node.text);
@@ -254,12 +254,12 @@ class Phase3Parser {
         for (var i = sections.length - 1; i > 0; i--) {
           var section = sections[i];
           if (section.variable!.name == variable) {
-            _endSection(i, node);
+            endSection(i, node);
             break;
           }
         }
       } else {
-        _addNode(node);
+        addNode(node);
       }
     }
 

@@ -97,19 +97,19 @@ class Renderer {
     var node = variable;
     var key = variable.name;
 
-    dynamic _fixValue(value) {
+    dynamic varFixValue(value) {
       return fixValue(node, key, value);
     }
 
     // Non dotted?
     if (_hasRawKey(key)) {
-      return await _fixValue(_getRawKeyValue(key));
+      return await varFixValue(_getRawKeyValue(key));
     }
 
     var parts = key!.split('.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
-        return await _fixValue(_getDottedKeyValue(parts));
+        return await varFixValue(_getDottedKeyValue(parts));
       }
 
       // If it contains the first part resolve
@@ -246,7 +246,7 @@ class Renderer {
       // First line don't indent
       sb.write(lines.first);
 
-      void _indent() {
+      void doIndent() {
         if (indent != null) {
           sb.write(indent);
         }
@@ -257,10 +257,10 @@ class Renderer {
         // finish first
         sb.writeln();
         for (var i = 1; i < lines.length - 1; i++) {
-          _indent();
+          doIndent();
           sb.writeln(lines[i]);
         }
-        _indent();
+        doIndent();
         sb.write(lines.last);
       }
 

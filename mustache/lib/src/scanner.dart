@@ -189,7 +189,7 @@ class Scanner extends Object with SourceMixin {
     if (getChar(start) == '=' && getChar(end - 1) == '=') {
       var index = start + 1;
 
-      void _skipWhitespaces() {
+      void skipWhitespaces() {
         while (true) {
           var chr = getChar(index);
           if (isInlineWhitespace(chr)) {
@@ -199,7 +199,7 @@ class Scanner extends Object with SourceMixin {
         }
       }
 
-      _skipWhitespaces();
+      skipWhitespaces();
 
       var sb = StringBuffer();
       while (true) {
@@ -211,7 +211,7 @@ class Scanner extends Object with SourceMixin {
       }
       var openDelimiter = sb.toString();
 
-      _skipWhitespaces();
+      skipWhitespaces();
 
       sb = StringBuffer();
       while (true) {
