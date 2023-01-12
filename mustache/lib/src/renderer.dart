@@ -97,19 +97,19 @@ class Renderer {
     var node = variable;
     var key = variable.name;
 
-    dynamic varFixValue(value) {
+    Object? varFixValue(Object? value) {
       return fixValue(node, key, value);
     }
 
     // Non dotted?
     if (_hasRawKey(key)) {
-      return await varFixValue(_getRawKeyValue(key));
+      return varFixValue(_getRawKeyValue(key));
     }
 
     var parts = key!.split('.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
-        return await varFixValue(_getDottedKeyValue(parts));
+        return varFixValue(_getDottedKeyValue(parts));
       }
 
       // If it contains the first part resolve

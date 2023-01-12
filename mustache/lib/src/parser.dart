@@ -316,7 +316,7 @@ class SectionNode extends ParserNode {
   bool operator ==(other) {
     if (other is SectionNode) {
       if (other.variable == variable) {
-        if (const ListEquality().equals(other.nodes, nodes)) {
+        if (const ListEquality<ParserNode?>().equals(other.nodes, nodes)) {
           return super == (other);
         }
       }
