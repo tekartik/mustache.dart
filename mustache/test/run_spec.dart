@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_untyped_parameter
+
 @TestOn('vm')
 library tekartik_mustache.spec_test;
 
@@ -105,16 +107,17 @@ bool shouldRun(String filename) {
 class _DummyCallableWithState {
   var _callCounter = 0;
 
-  String call(arg) => '${++_callCounter}';
+  String call(Object? arg) => '${++_callCounter}';
 
   void reset() => _callCounter = 0;
 }
 
-var lambdas = {
+typedef Lambda = Object? Function(String src);
+
+var lambdasFunctions = <String, Function>{
   'Interpolation': (t) => 'world',
   'Interpolation - Expansion': (t) => '{{planet}}',
   'Interpolation - Alternate Delimiters': (t) => '|planet| => {{planet}}',
-  'Interpolation - Multiple Calls': _DummyCallableWithState(),
   //function() { return (g=(function(){return this})()).calls=(g.calls||0)+1 }
   'Escaping': (t) => '>',
   'Section': (txt) => txt == '{{x}}' ? 'yes' : 'no',
@@ -122,4 +125,8 @@ var lambdas = {
   'Section - Alternate Delimiters': (txt) => '$txt{{planet}} => |planet|$txt',
   'Section - Multiple Calls': (t) => '__${t}__',
   'Inverted Section': (txt) => false
+};
+var lambdas = <String, Object>{
+  'Interpolation - Multiple Calls': _DummyCallableWithState(),
+  ...lambdasFunctions
 };

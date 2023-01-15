@@ -33,7 +33,7 @@ int tabUnit = 9;
 int spaceUnit = 32;
 
 // json positive basic testing
-bool isPositiveValue(value) {
+bool isPositiveValue(Object? value) {
   if (value == true) {
     return true;
   }

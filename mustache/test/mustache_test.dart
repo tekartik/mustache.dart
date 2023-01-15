@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_collection_literal
+
 import 'package:tekartik_mustache/mustache.dart';
 import 'package:test/test.dart';
 
