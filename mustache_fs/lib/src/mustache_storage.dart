@@ -7,7 +7,9 @@ import 'package:fs_shim/fs_none.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_storage/storage.dart' as storage;
 
-class FileSystemStorage extends FileSystemNone {
+import 'fs_shim_import.dart';
+
+class FileSystemStorage with FileSystemMixin {
   final storage.Bucket bucket;
 
   FileSystemStorage(this.bucket);
@@ -38,7 +40,7 @@ class FileSystemStorage extends FileSystemNone {
 }
 
 class FileStorage extends FileSystemEntityStorage
-    with FileNone
+    with FileMixin
     implements File {
   final storage.File nativeInstance;
 
@@ -69,7 +71,7 @@ class FileStorage extends FileSystemEntityStorage
 }
 
 class DirectoryStorage extends FileSystemEntityStorage
-    with DirectoryNone
+    with DirectoryMixin
     implements Directory {
   DirectoryStorage(FileSystem fs, String path) : super(fs, path);
 
@@ -81,7 +83,7 @@ class DirectoryStorage extends FileSystemEntityStorage
 }
 
 abstract class FileSystemEntityStorage extends Object
-    with FileSystemEntityNone
+    with FileSystemEntityMixin
     implements FileSystemEntity {
   @override
   final FileSystem fs;
