@@ -8,7 +8,6 @@ environment:
 
 dev_dependencies:
   dev_test: '>=0.13.0'
-  pedantic:
   path:
   tekartik_lints:
     git:
