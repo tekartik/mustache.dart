@@ -10,7 +10,7 @@ dependencies:
     git:
       url: https://github.com/tekartik/platform.dart
       path: platform_io
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.2.1'
 ```yaml
 
@@ -22,6 +22,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/platform.dart
       path: platform_browser
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.2.1'
 ```
