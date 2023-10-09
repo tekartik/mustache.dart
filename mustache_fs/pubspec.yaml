@@ -3,7 +3,7 @@ version: 0.2.1
 description: Mustache and fs together
 publish_to: none
 environment:
-  sdk: '>=2.18.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   fs_shim: '>=2.1.0+1'
@@ -11,13 +11,13 @@ dependencies:
     git:
       url: https://github.com/tekartik/mustache.dart
       path: mustache
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.2.1'
   tekartik_firebase_storage:
     git:
       url: https://github.com/tekartik/firebase_storage.dart
       path: storage
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.3.7'
   yaml: any
   path:
@@ -27,7 +27,7 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase_storage.dart
       path: storage_fs
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.3.7'
   process_run: '>=0.10.2'
 

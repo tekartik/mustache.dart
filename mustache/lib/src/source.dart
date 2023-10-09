@@ -1,6 +1,6 @@
 import 'import.dart';
 
-abstract class SourceMixin {
+abstract mixin class SourceMixin {
   String? get source;
 
   String getChar(int index) {
