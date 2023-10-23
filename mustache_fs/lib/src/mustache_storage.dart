@@ -44,8 +44,7 @@ class FileStorage extends FileSystemEntityStorage
     implements File {
   final storage.File nativeInstance;
 
-  FileStorage(FileSystem fs, String path, this.nativeInstance)
-      : super(fs, path);
+  FileStorage(super.fs, super.path, this.nativeInstance);
 
   @override
   Future<Uint8List> readAsBytes() async {
@@ -73,7 +72,7 @@ class FileStorage extends FileSystemEntityStorage
 class DirectoryStorage extends FileSystemEntityStorage
     with DirectoryMixin
     implements Directory {
-  DirectoryStorage(FileSystem fs, String path) : super(fs, path);
+  DirectoryStorage(super.fs, super.path);
 
   @override
   Future<Directory> create({bool recursive = false}) async {

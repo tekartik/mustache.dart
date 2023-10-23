@@ -268,29 +268,29 @@ class Phase3Parser {
 }
 
 abstract class ParserNode extends Node {
-  ParserNode(String? text) : super(text);
+  ParserNode(super.text);
 }
 
 class VariableNode extends ParserNode {
-  VariableNode(String? text) : super(text);
+  VariableNode(super.text);
 
   String? get name => text;
 }
 
 class NoEscapeVariableNode extends VariableNode {
-  NoEscapeVariableNode(String? text) : super(text);
+  NoEscapeVariableNode(super.text);
 }
 
 class CommentNode extends ParserNode {
-  CommentNode(String? text) : super(text);
+  CommentNode(super.text);
 }
 
 class DelimitersNode extends CommentNode {
-  DelimitersNode(String? text) : super(text);
+  DelimitersNode(super.text);
 }
 
 class TextNode extends ParserNode {
-  TextNode(String? text) : super(text);
+  TextNode(super.text);
 }
 
 class SectionNode extends ParserNode {
@@ -346,11 +346,11 @@ class SectionStartNode extends SectionDelimiterNode {
 }
 
 class SectionEndNode extends SectionDelimiterNode {
-  SectionEndNode(SourceContent source, String? text) : super(source, text);
+  SectionEndNode(super.source, super.text);
 }
 
 class PartialNode extends ParserNode {
-  PartialNode(String? text) : super(text);
+  PartialNode(super.text);
 }
 
 List<ParserNode> parseScannerNodePhase1(List<ScannerNode> scannerNodes) {

@@ -33,11 +33,11 @@ class DefaultScannerDelimiter extends ScannerDelimiter {
 }
 
 abstract class ScannerNode extends Node {
-  ScannerNode(String? text) : super(text);
+  ScannerNode(super.text);
 }
 
 class TextScannerNode extends ScannerNode {
-  TextScannerNode(String? text) : super(text);
+  TextScannerNode(super.text);
 }
 
 class MustacheScannerNode extends ScannerNode
@@ -56,12 +56,11 @@ class MustacheScannerNode extends ScannerNode
       this.source, this.start, this.end, this.delimiter, String text)
       : super(text);
 
-  MustacheScannerNode.withText(String text)
+  MustacheScannerNode.withText(String super.text)
       : source = null,
         start = null,
         end = null,
-        delimiter = null,
-        super(text);
+        delimiter = null;
 }
 
 // Scan by line
