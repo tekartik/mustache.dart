@@ -1,5 +1,5 @@
 name: tekartik_mustache
-version: 0.3.0
+version: 0.3.1
 description: Mustache dart implementation
 publish_to: none
 environment:
