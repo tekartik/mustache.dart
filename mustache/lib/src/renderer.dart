@@ -22,7 +22,7 @@ class Renderer {
     if (partial == null) {
       return null;
     }
-    var result = partial!('', RendererPartialContext(partialContext));
+    var result = partial!(name, RendererPartialContext(partialContext));
     if (result is String) {
       return result;
     }

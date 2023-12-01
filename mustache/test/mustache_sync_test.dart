@@ -9,8 +9,14 @@ void main() {
       expect(render('_', {}), '_');
     });
 
-    test('one_var', () async {
-      expect(render('{{var}}', {'var': 'value'}), 'value');
+    test('two_vars', () async {
+      expect(render('{{var1}} {{var2}}', {'var1': '1', 'var2': 2}), '1 2');
+    });
+    test('two_partials', () async {
+      expect(
+          render('{{>p1}} {{>p2}}', {},
+              lambda: (name) => {'p1': '1', 'p2': '2'}[name]),
+          '1 2');
     });
   });
 }
