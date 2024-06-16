@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:fs_shim/fs.dart';
 import 'package:fs_shim/fs_none.dart';
 import 'package:path/path.dart';
+import 'package:tekartik_common_utils/byte_utils.dart';
 import 'package:tekartik_firebase_storage/storage.dart' as storage;
 
 import 'fs_shim_import.dart';
@@ -48,14 +49,14 @@ class FileStorage extends FileSystemEntityStorage
 
   @override
   Future<Uint8List> readAsBytes() async {
-    var list = await nativeInstance.download();
+    var list = await nativeInstance.readAsBytes();
     return list;
   }
 
   @override
   Future<File> writeAsBytes(List<int> bytes,
       {FileMode mode = FileMode.write, bool flush = false}) async {
-    await nativeInstance.save(bytes);
+    await nativeInstance.writeAsBytes(asUint8List(bytes));
     return this;
   }
 
@@ -64,7 +65,7 @@ class FileStorage extends FileSystemEntityStorage
       {FileMode mode = FileMode.write,
       Encoding encoding = utf8,
       bool flush = false}) async {
-    await nativeInstance.save(contents);
+    await nativeInstance.writeAsString(contents);
     return this;
   }
 }
