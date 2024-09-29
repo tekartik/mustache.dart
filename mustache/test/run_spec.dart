@@ -1,7 +1,7 @@
 // ignore_for_file: inference_failure_on_untyped_parameter
 
 @TestOn('vm')
-library tekartik_mustache.spec_test;
+library;
 
 import 'dart:convert';
 import 'dart:io';

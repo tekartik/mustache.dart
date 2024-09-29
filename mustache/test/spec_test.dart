@@ -1,4 +1,4 @@
-library tekartik_mustache.spec_test;
+library;
 
 import 'run_spec.dart' as run_spec;
 
