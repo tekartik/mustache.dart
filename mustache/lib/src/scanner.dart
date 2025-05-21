@@ -29,7 +29,7 @@ class ScannerDelimiter {
 
 class DefaultScannerDelimiter extends ScannerDelimiter {
   DefaultScannerDelimiter()
-      : super(openDelimiterDefault, closeDelimiterDefault);
+    : super(openDelimiterDefault, closeDelimiterDefault);
 }
 
 abstract class ScannerNode extends Node {
@@ -53,14 +53,18 @@ class MustacheScannerNode extends ScannerNode
   final ScannerDelimiter? delimiter;
 
   MustacheScannerNode(
-      this.source, this.start, this.end, this.delimiter, String text)
-      : super(text);
+    this.source,
+    this.start,
+    this.end,
+    this.delimiter,
+    String text,
+  ) : super(text);
 
   MustacheScannerNode.withText(String super.text)
-      : source = null,
-        start = null,
-        end = null,
-        delimiter = null;
+    : source = null,
+      start = null,
+      end = null,
+      delimiter = null;
 }
 
 // Scan by line
@@ -157,9 +161,13 @@ class Scanner extends Object with SourceMixin {
       // Are we in a triple escape mode?
       defaultNoEscape = text.startsWith(defaultNoEscapeDelimiterRegExp);
     }
-    end = source.substring(start).indexOf(defaultNoEscape
-        ? defaultNoEscapeCloseDelimiterRegExp
-        : delimiter!.closeRegExp);
+    end = source
+        .substring(start)
+        .indexOf(
+          defaultNoEscape
+              ? defaultNoEscapeCloseDelimiterRegExp
+              : delimiter!.closeRegExp,
+        );
     if (end == -1) {
       end = this.end;
       index = end;
@@ -236,8 +244,13 @@ class Scanner extends Object with SourceMixin {
     }
 
     // index is the outer end
-    return MustacheScannerNode(source, outerStart, index, delimiter,
-        sourceGetText(source, start, end));
+    return MustacheScannerNode(
+      source,
+      outerStart,
+      index,
+      delimiter,
+      sourceGetText(source, start, end),
+    );
   }
 
   final List<ScannerNode> nodes = [];

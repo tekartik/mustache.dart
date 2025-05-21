@@ -43,13 +43,14 @@ void main() {
       });
 
       test('section_node', () async {
-        expect(parse('{{#section}}{{/section'),
-            [SectionNode(VariableNode('section'))]);
+        expect(parse('{{#section}}{{/section'), [
+          SectionNode(VariableNode('section')),
+        ]);
       });
       test('multi_section', () async {
         expect(parse('{{#s1}}{{#s2}}{{/s1}}'), [
           SectionNode(VariableNode('s1'))
-            ..nodes.add(SectionNode(VariableNode('s2')))
+            ..nodes.add(SectionNode(VariableNode('s2'))),
         ]);
       });
 
@@ -84,18 +85,21 @@ void main() {
     });
     group('sections', () {
       test('section_space_before', () async {
-        expect(parse(' {{#s}}{{/s}}'),
-            [TextNode(' '), SectionNode(VariableNode('s'))]);
+        expect(parse(' {{#s}}{{/s}}'), [
+          TextNode(' '),
+          SectionNode(VariableNode('s')),
+        ]);
       });
       test('inner_section', () async {
         expect(parse('{{#s1}}{{#s2}}{{/s2{{/s1}}'), [
           SectionNode(VariableNode('s1'))
-            ..nodes.add(SectionNode(VariableNode('s2')))
+            ..nodes.add(SectionNode(VariableNode('s2'))),
         ]);
       });
       test('space_line_feed_inner', () async {
-        expect(parse('{{#s}} \n{{/s}}'),
-            [SectionNode(VariableNode('s'))..nodes.add(TextNode(' \n'))]);
+        expect(parse('{{#s}} \n{{/s}}'), [
+          SectionNode(VariableNode('s'))..nodes.add(TextNode(' \n')),
+        ]);
       });
     });
 

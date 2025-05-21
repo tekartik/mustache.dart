@@ -55,10 +55,12 @@ void _defineGroupFromFile(String filename, String text) {
       testDescription.write(map['desc']);
       var template = map['template'] as String;
       var data = Map<String, dynamic>.from(map['data'] as Map);
-      var templateOneline =
-          template.replaceAll('\n', '\\n').replaceAll('\r', '\\r');
-      var reason =
-          StringBuffer("Could not render right '''$templateOneline'''");
+      var templateOneline = template
+          .replaceAll('\n', '\\n')
+          .replaceAll('\r', '\\r');
+      var reason = StringBuffer(
+        "Could not render right '''$templateOneline'''",
+      );
       var expected = map['expected'];
 
       var partials = map['partials'] as Map?;
@@ -80,8 +82,11 @@ void _defineGroupFromFile(String filename, String text) {
       }
 
       test(testDescription.toString(), () async {
-        expect(await render(template, data, partial: partial), expected,
-            reason: reason.toString());
+        expect(
+          await render(template, data, partial: partial),
+          expected,
+          reason: reason.toString(),
+        );
       });
     }
   }, skip: skipAll);
@@ -124,9 +129,9 @@ var lambdasFunctions = <String, Function>{
   'Section - Expansion': (txt) => '$txt{{planet}}$txt',
   'Section - Alternate Delimiters': (txt) => '$txt{{planet}} => |planet|$txt',
   'Section - Multiple Calls': (t) => '__${t}__',
-  'Inverted Section': (txt) => false
+  'Inverted Section': (txt) => false,
 };
 var lambdas = <String, Object>{
   'Interpolation - Multiple Calls': _DummyCallableWithState(),
-  ...lambdasFunctions
+  ...lambdasFunctions,
 };

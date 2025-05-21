@@ -95,7 +95,7 @@ void main() {
           tn(' '),
           mn('data'),
           tn(' '),
-          mn('/s')
+          mn('/s'),
         ]);
       });
     });

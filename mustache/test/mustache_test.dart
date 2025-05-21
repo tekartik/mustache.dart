@@ -72,10 +72,11 @@ void main() {
     });
     test('dotted', () async {
       expect(
-          await render('{{var.sub}}', {
-            'var': {'sub': 'value'}
-          }),
-          'value');
+        await render('{{var.sub}}', {
+          'var': {'sub': 'value'},
+        }),
+        'value',
+      );
     });
   });
   group('section', () {
@@ -115,7 +116,9 @@ void main() {
     });
     test('multi_section', () async {
       expect(
-          await render(' {{#s}} {{/s}} {{#s}} {{/s}} ', {'s': true}), '     ');
+        await render(' {{#s}} {{/s}} {{#s}} {{/s}} ', {'s': true}),
+        '     ',
+      );
     });
     test('inner_comment', () async {
       expect(await render('{{#s}} {{!comment}}{{/s}}\n', {'s': true}), ' \n');
@@ -125,36 +128,40 @@ void main() {
     });
     test('simple_map', () async {
       expect(
-          await render('{{#s}}{{var}}{{/s}}', {
-            's': {'var': 'value'}
-          }),
-          'value');
+        await render('{{#s}}{{var}}{{/s}}', {
+          's': {'var': 'value'},
+        }),
+        'value',
+      );
     });
     test('simple_list', () async {
       expect(
-          await render('{{#s}}{{var}}{{/ss}}', {
-            's': [
-              {'var': 'value1'},
-              {'var': 'value2'}
-            ]
-          }),
-          'value1value2');
+        await render('{{#s}}{{var}}{{/ss}}', {
+          's': [
+            {'var': 'value1'},
+            {'var': 'value2'},
+          ],
+        }),
+        'value1value2',
+      );
     });
     test('nested_map', () async {
       expect(
-          await render('{{#s1}}{{#s2}}{{var}}{{/s2}}{{/s1}}', {
-            's1': {'var': 'value'},
-            's2': {}
-          }),
-          'value');
+        await render('{{#s1}}{{#s2}}{{var}}{{/s2}}{{/s1}}', {
+          's1': {'var': 'value'},
+          's2': {},
+        }),
+        'value',
+      );
     });
     test('context_precendence', () async {
       expect(
-          await render('{{#a}}{{b.c}}{{/a}}', {
-            'a': {'b': {}},
-            'b': {'c': 'ERROR'}
-          }),
-          '');
+        await render('{{#a}}{{b.c}}{{/a}}', {
+          'a': {'b': {}},
+          'b': {'c': 'ERROR'},
+        }),
+        '',
+      );
     });
     test('standalone_lines', () async {
       expect(await render('{{#s}}\n{{/s}}', {'s': true}), '');
@@ -165,30 +172,39 @@ void main() {
 
     test('implicit_string', () async {
       expect(
-          await render('{{#list}}{{.}}{{/list}}', {
-            'list': ['value']
-          }),
-          'value');
+        await render('{{#list}}{{.}}{{/list}}', {
+          'list': ['value'],
+        }),
+        'value',
+      );
     });
   });
 
   group('partial', () {
     test('simple_partial', () async {
       expect(
-          await render('{{>partial}}', null,
-              partial: (String? source, map) => 'value'),
-          'value');
+        await render(
+          '{{>partial}}',
+          null,
+          partial: (String? source, map) => 'value',
+        ),
+        'value',
+      );
     });
     test('partial_var', () async {
       expect(
-          await render('{{>partial}}', {'var': 'value'},
-              partial: (String? source, map) => '{{var}}'),
-          'value');
+        await render('{{>partial}}', {
+          'var': 'value',
+        }, partial: (String? source, map) => '{{var}}'),
+        'value',
+      );
     });
     test('sub_partial_var', () async {
       expect(
-          await render('{{>p1}}', {'var': 'value'},
-              partial: (String? partial, _) {
+        await render(
+          '{{>p1}}',
+          {'var': 'value'},
+          partial: (String? partial, _) {
             switch (partial) {
               case 'p1':
                 return '{{>p2}}';
@@ -196,73 +212,94 @@ void main() {
                 return '{{var}}';
             }
             return null;
-          }),
-          'value');
+          },
+        ),
+        'value',
+      );
     });
     test('ending crlf', () async {
       // from spec
       // '\r\n' should be considered a newline for standalone tags.'
       expect(
-          await render('{{>p}}\r\n|', null,
-              partial: (String? source, map) => '>'),
-          '>|');
+        await render(
+          '{{>p}}\r\n|',
+          null,
+          partial: (String? source, map) => '>',
+        ),
+        '>|',
+      );
     });
     test('partial_no_previous_line', () async {
       // from spec
       // Standalone tags should not require a newline to precede them.
       expect(
-          await render('  {{>p}}\n>', null,
-              partial: (String? _, map) => '>\n>'),
-          '  >\n  >>');
+        await render('  {{>p}}\n>', null, partial: (String? _, map) => '>\n>'),
+        '  >\n  >>',
+      );
     });
     test('partial_no_previous_line', () async {
       // from spec
       // Standalone tags should not require a newline to precede them.
       expect(
-          await render('  {{>p}}\n>', null,
-              partial: (String? source, map) => '>\n>'),
-          '  >\n  >>');
+        await render(
+          '  {{>p}}\n>',
+          null,
+          partial: (String? source, map) => '>\n>',
+        ),
+        '  >\n  >>',
+      );
     });
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
       expect(
-          await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
-          '| >\n>\n');
+        await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
+        '| >\n>\n',
+      );
     });
 
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
       expect(
-          await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
-          '| >\n>\n');
+        await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
+        '| >\n>\n',
+      );
     });
 
     test('partial_data_before_2', () async {
       // from spec
       // Whitespace should be left untouched.
       expect(
-          await render(' {{data}} {{>p}}\n', {'data': '|'},
-              partial: (String? _, map) => '>\n>'),
-          ' | >\n>\n');
+        await render(' {{data}} {{>p}}\n', {
+          'data': '|',
+        }, partial: (String? _, map) => '>\n>'),
+        ' | >\n>\n',
+      );
     });
     test('partial_root_depth', () async {
       expect(
-          await render('{{>partial}}', null,
-              partial: (String? name, PartialContext context) {
+        await render(
+          '{{>partial}}',
+          null,
+          partial: (String? name, PartialContext context) {
             expect(name, 'partial');
             expect(context.userData, null);
             expect(context.parent!.userData, 1);
             return 'value';
-          }, partialContext: PartialContext(1)),
-          'value');
+          },
+          partialContext: PartialContext(1),
+        ),
+        'value',
+      );
     });
 
     test('partial_sub_depth', () async {
       expect(
-          await render('{{>p1}}', null,
-              partial: (String? name, PartialContext context) {
+        await render(
+          '{{>p1}}',
+          null,
+          partial: (String? name, PartialContext context) {
             if (name == 'p1') {
               expect(context.parent!.userData, 1);
               context.userData = 2;
@@ -273,8 +310,11 @@ void main() {
               expect(context.parent!.parent!.userData, 1);
               return 'value';
             }
-          }, partialContext: PartialContext(1)),
-          'value');
+          },
+          partialContext: PartialContext(1),
+        ),
+        'value',
+      );
     });
 
     /*
@@ -290,43 +330,48 @@ void main() {
   group('lambdas', () {
     test('simple_lambda', () async {
       expect(
-          await render('{{f}}', {
-            'f': (String name) {
-              // expected name
-              expect(name, 'f');
-              return 'value';
-            }
-          }),
-          'value');
+        await render('{{f}}', {
+          'f': (String name) {
+            // expected name
+            expect(name, 'f');
+            return 'value';
+          },
+        }),
+        'value',
+      );
     });
 
     test('var_lambda', () async {
-      expect(await render('{{f}}', {'f': (_) => '{{var}}', 'var': 'value'}),
-          'value');
+      expect(
+        await render('{{f}}', {'f': (_) => '{{var}}', 'var': 'value'}),
+        'value',
+      );
     });
 
     test('lambda_section', () async {
       expect(
-          await render('{{#f}}inner{{/f}}', {
-            'f': (String name) {
-              // expected name
-              expect(name, 'inner');
-              return 'value';
-            }
-          }),
-          'value');
+        await render('{{#f}}inner{{/f}}', {
+          'f': (String name) {
+            // expected name
+            expect(name, 'inner');
+            return 'value';
+          },
+        }),
+        'value',
+      );
     });
 
     test('lambda_raw_section', () async {
       expect(
-          await render('{{#f}}{{x}}{{/f}}', {
-            'f': (String name) {
-              // expected name
-              expect(name, '{{x}}');
-              return 'value';
-            }
-          }),
-          'value');
+        await render('{{#f}}{{x}}{{/f}}', {
+          'f': (String name) {
+            // expected name
+            expect(name, '{{x}}');
+            return 'value';
+          },
+        }),
+        'value',
+      );
     });
   });
 

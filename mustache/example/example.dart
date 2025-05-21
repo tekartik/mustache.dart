@@ -11,16 +11,20 @@ Future<void> main() async {
 ''';
   var parts = {'header2': '<h2>{{subtitle}}</h2>'};
 
-  var text = render(template, {
-    'title': 'Hello',
-    'subtitle': 'Some description',
-    'text': 'World',
-    'list': [
-      {'name': 'John'},
-      {'name': 'Marie'}
-    ]
-  }, lambda: (String? name) {
-    return parts[name];
-  });
+  var text = render(
+    template,
+    {
+      'title': 'Hello',
+      'subtitle': 'Some description',
+      'text': 'World',
+      'list': [
+        {'name': 'John'},
+        {'name': 'Marie'},
+      ],
+    },
+    lambda: (String? name) {
+      return parts[name];
+    },
+  );
   print(text);
 }

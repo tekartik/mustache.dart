@@ -48,7 +48,8 @@ void fsTest(FileSystem fs) {
       await sub2.create(recursive: true);
       await file1.writeAsString('{{> ${file2.path} }}');
       await file2.writeAsString(
-          '{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}');
+        '{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}',
+      );
       await file3.writeAsString('content');
       expect(await renderFile(fs, file1.path), 'content');
     });
@@ -62,7 +63,8 @@ void fsTest(FileSystem fs) {
       await sub2.create(recursive: true);
       await file1.writeAsString('{{> ${file2.path} }} {{> ${file2.path} }}');
       await file2.writeAsString(
-          '{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}');
+        '{{> ${path.join(path.basename(sub2.path), path.basename(file3.path))} }}',
+      );
       await file3.writeAsString('content');
       expect(await renderFile(fs, file1.path), 'content content');
     });

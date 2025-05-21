@@ -14,9 +14,13 @@ void main() {
     });
     test('two_partials', () async {
       expect(
-          render('{{>p1}} {{>p2}}', {},
-              lambda: (name) => {'p1': '1', 'p2': '2'}[name]),
-          '1 2');
+        render(
+          '{{>p1}} {{>p2}}',
+          {},
+          lambda: (name) => {'p1': '1', 'p2': '2'}[name],
+        ),
+        '1 2',
+      );
     });
   });
 }

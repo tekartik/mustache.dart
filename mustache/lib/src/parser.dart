@@ -53,13 +53,20 @@ class Phase1Parser {
           case '#':
             if (trim(1)) {
               addNode(
-                  SectionStartNode(scannerNode.delimiter, scannerNode, text));
+                SectionStartNode(scannerNode.delimiter, scannerNode, text),
+              );
             }
             break;
           case '^':
             if (trim(1)) {
-              addNode(SectionStartNode(scannerNode.delimiter, scannerNode, text,
-                  inverted: true));
+              addNode(
+                SectionStartNode(
+                  scannerNode.delimiter,
+                  scannerNode,
+                  text,
+                  inverted: true,
+                ),
+              );
             }
             break;
           case '/':
@@ -124,8 +131,11 @@ class Section {
   }
 
   Section(SectionStartNode startNode) {
-    node = SectionNode(VariableNode(startNode.text),
-        startNode: startNode, inverted: startNode.inverted);
+    node = SectionNode(
+      VariableNode(startNode.text),
+      startNode: startNode,
+      inverted: startNode.inverted,
+    );
   }
 
   VariableNode? get variable => node!.variable;
@@ -340,9 +350,12 @@ class SectionStartNode extends SectionDelimiterNode {
   final ScannerDelimiter? delimiter;
   final bool? inverted;
 
-  SectionStartNode(this.delimiter, SourceContent source, String? text,
-      {this.inverted})
-      : super(source, text);
+  SectionStartNode(
+    this.delimiter,
+    SourceContent source,
+    String? text, {
+    this.inverted,
+  }) : super(source, text);
 }
 
 class SectionEndNode extends SectionDelimiterNode {

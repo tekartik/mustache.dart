@@ -100,9 +100,10 @@ class Renderer {
       if (result is bool) {
         throw UnsupportedError('TODO');
       } else if (result is String) {
-        var renderer = Renderer()
-          ..values = values
-          ..partial = partial;
+        var renderer =
+            Renderer()
+              ..values = values
+              ..partial = partial;
         result = await renderer.render(result);
         // escape
         result = await fixValue(node, key, result) as String?;
@@ -129,9 +130,10 @@ class Renderer {
       } else if (result is Future) {
         throw UnsupportedError('Future not supported');
       } else if (result is String) {
-        var renderer = Renderer()
-          ..values = values
-          ..partial = partial;
+        var renderer =
+            Renderer()
+              ..values = values
+              ..partial = partial;
         result = renderer.renderSync(result);
         // escape
         result = fixValueSync(node, key, result) as String?;
@@ -142,8 +144,10 @@ class Renderer {
     }
   }
 
-  Future getVariableValue(VariableNode variable,
-      {bool recursive = true}) async {
+  Future getVariableValue(
+    VariableNode variable, {
+    bool recursive = true,
+  }) async {
     var node = variable;
     var key = variable.name;
 
@@ -282,10 +286,11 @@ class Renderer {
   }
 
   Renderer nestedRenderer({PartialContext? partialContext}) {
-    var renderer = Renderer()
-      ..partial = partial
-      ..partialContext = partialContext ?? this.partialContext
-      ..parent = this;
+    var renderer =
+        Renderer()
+          ..partial = partial
+          ..partialContext = partialContext ?? this.partialContext
+          ..parent = this;
 
     return renderer;
   }
@@ -294,8 +299,10 @@ class Renderer {
   void fromNestedRendered(Renderer renderer) {}
 
   Future<void> renderChildNodes(
-      List<ParserNode?> nodes, Map<String, dynamic>? values,
-      {PartialContext? partialContext}) async {
+    List<ParserNode?> nodes,
+    Map<String, dynamic>? values, {
+    PartialContext? partialContext,
+  }) async {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
     var renderer = nestedRenderer(partialContext: partialContext)
       ..values = values;
@@ -307,8 +314,10 @@ class Renderer {
   }
 
   void renderChildNodesSync(
-      List<ParserNode?> nodes, Map<String, dynamic>? values,
-      {PartialContext? partialContext}) {
+    List<ParserNode?> nodes,
+    Map<String, dynamic>? values, {
+    PartialContext? partialContext,
+  }) {
     // var previousHasTemplateOnCurrentLine = hasTemplateOnCurrentLine;
     var renderer = nestedRenderer(partialContext: partialContext)
       ..values = values;
@@ -447,9 +456,11 @@ class Renderer {
 
   Future _renderNodes(List<ParserNode?> nodes) async {
     this.nodes = nodes;
-    for (currentNodeIndex = 0;
-        currentNodeIndex! < nodes.length;
-        currentNodeIndex = currentNodeIndex! + 1) {
+    for (
+      currentNodeIndex = 0;
+      currentNodeIndex! < nodes.length;
+      currentNodeIndex = currentNodeIndex! + 1
+    ) {
       var node = currentNode;
 
       if (node is SectionNode) {
@@ -462,7 +473,10 @@ class Renderer {
           final keyStart = node.startNode!.sourceContent.end!;
           final keyEnd = node.endNode.sourceContent.start;
           key = sourceGetText(
-              node.startNode!.sourceContent.source!, keyStart, keyEnd);
+            node.startNode!.sourceContent.source!,
+            keyStart,
+            keyEnd,
+          );
 
           // call the function
           // ignore: avoid_dynamic_calls
@@ -506,7 +520,8 @@ class Renderer {
             }
           } else {
             throw UnsupportedError(
-                'value $value (${value.runtimeType}) node $node');
+              'value $value (${value.runtimeType}) node $node',
+            );
           }
         }
       } else if (node is PartialNode) {
@@ -523,9 +538,11 @@ class Renderer {
 
   void _renderNodesSync(List<ParserNode?> nodes) {
     this.nodes = nodes;
-    for (currentNodeIndex = 0;
-        currentNodeIndex! < nodes.length;
-        currentNodeIndex = currentNodeIndex! + 1) {
+    for (
+      currentNodeIndex = 0;
+      currentNodeIndex! < nodes.length;
+      currentNodeIndex = currentNodeIndex! + 1
+    ) {
       var node = currentNode;
 
       if (node is SectionNode) {
@@ -538,7 +555,10 @@ class Renderer {
           final keyStart = node.startNode!.sourceContent.end!;
           final keyEnd = node.endNode.sourceContent.start;
           key = sourceGetText(
-              node.startNode!.sourceContent.source!, keyStart, keyEnd);
+            node.startNode!.sourceContent.source!,
+            keyStart,
+            keyEnd,
+          );
 
           // call the function
           // ignore: avoid_dynamic_calls
@@ -582,7 +602,8 @@ class Renderer {
             }
           } else {
             throw UnsupportedError(
-                'value $value (${value.runtimeType}) node $node');
+              'value $value (${value.runtimeType}) node $node',
+            );
           }
         }
       } else if (node is PartialNode) {

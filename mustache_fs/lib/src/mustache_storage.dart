@@ -54,17 +54,22 @@ class FileStorage extends FileSystemEntityStorage
   }
 
   @override
-  Future<File> writeAsBytes(List<int> bytes,
-      {FileMode mode = FileMode.write, bool flush = false}) async {
+  Future<File> writeAsBytes(
+    List<int> bytes, {
+    FileMode mode = FileMode.write,
+    bool flush = false,
+  }) async {
     await nativeInstance.writeAsBytes(asUint8List(bytes));
     return this;
   }
 
   @override
-  Future<File> writeAsString(String contents,
-      {FileMode mode = FileMode.write,
-      Encoding encoding = utf8,
-      bool flush = false}) async {
+  Future<File> writeAsString(
+    String contents, {
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
+  }) async {
     await nativeInstance.writeAsString(contents);
     return this;
   }

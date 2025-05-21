@@ -71,7 +71,7 @@ Future mustacheMain(List<String> arguments) async {
     tryYaml();
   }
 
-// failing try everything
+  // failing try everything
   if (data == null) {
     if (!canBeJson) {
       tryJson();
@@ -87,8 +87,11 @@ Future mustacheMain(List<String> arguments) async {
     throw exception ?? StateError('source data not a map');
   }
 
-  var mustacheResult = await renderFile(fs, templateFilePath,
-      values: (data as Map).cast<String, dynamic>());
+  var mustacheResult = await renderFile(
+    fs,
+    templateFilePath,
+    values: (data as Map).cast<String, dynamic>(),
+  );
   if (mustacheResult != null) {
     if (outFilePath != null) {
       await fs.file(outFilePath).writeAsString(mustacheResult);
@@ -97,7 +100,8 @@ Future mustacheMain(List<String> arguments) async {
     }
   } else {
     stderr.writeln(
-        "Failed to render file '$templateFilePath' with data from file '$dataFilePath'");
+      "Failed to render file '$templateFilePath' with data from file '$dataFilePath'",
+    );
     exit(1);
   }
 }
