@@ -100,10 +100,9 @@ class Renderer {
       if (result is bool) {
         throw UnsupportedError('TODO');
       } else if (result is String) {
-        var renderer =
-            Renderer()
-              ..values = values
-              ..partial = partial;
+        var renderer = Renderer()
+          ..values = values
+          ..partial = partial;
         result = await renderer.render(result);
         // escape
         result = await fixValue(node, key, result) as String?;
@@ -130,10 +129,9 @@ class Renderer {
       } else if (result is Future) {
         throw UnsupportedError('Future not supported');
       } else if (result is String) {
-        var renderer =
-            Renderer()
-              ..values = values
-              ..partial = partial;
+        var renderer = Renderer()
+          ..values = values
+          ..partial = partial;
         result = renderer.renderSync(result);
         // escape
         result = fixValueSync(node, key, result) as String?;
@@ -286,11 +284,10 @@ class Renderer {
   }
 
   Renderer nestedRenderer({PartialContext? partialContext}) {
-    var renderer =
-        Renderer()
-          ..partial = partial
-          ..partialContext = partialContext ?? this.partialContext
-          ..parent = this;
+    var renderer = Renderer()
+      ..partial = partial
+      ..partialContext = partialContext ?? this.partialContext
+      ..parent = this;
 
     return renderer;
   }

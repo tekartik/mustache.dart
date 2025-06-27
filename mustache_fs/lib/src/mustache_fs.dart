@@ -22,9 +22,8 @@ class MustacheFs {
             (await loadYaml(await fs.file(yamlPath).readAsString()) as Map?)
                 ?.cast<String, dynamic>();
       } else if (jsonPath != null) {
-        values =
-            (json.decode(await fs.file(jsonPath).readAsString()) as Map?)
-                ?.cast<String, dynamic>();
+        values = (json.decode(await fs.file(jsonPath).readAsString()) as Map?)
+            ?.cast<String, dynamic>();
       }
     }
     var source = await fs.file(path).readAsString();

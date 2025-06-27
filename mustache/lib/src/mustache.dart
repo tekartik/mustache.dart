@@ -7,10 +7,9 @@ String mustacheRenderSync(
   Map<String, Object?> values, {
   LambdaSync? lambda,
 }) {
-  var renderer =
-      Renderer()
-        ..values = values
-        ..partial = (name, _) => lambda?.call(name);
+  var renderer = Renderer()
+    ..values = values
+    ..partial = (name, _) => lambda?.call(name);
 
   return renderer.renderSync(source);
 }
@@ -26,11 +25,10 @@ Future<String?> render(
   if (source == null) {
     return null;
   }
-  var renderer =
-      Renderer()
-        ..values = values
-        ..partial = partial
-        ..partialContext = partialContext;
+  var renderer = Renderer()
+    ..values = values
+    ..partial = partial
+    ..partialContext = partialContext;
   return await renderer.render(source);
 }
 
