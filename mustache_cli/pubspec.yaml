@@ -11,13 +11,11 @@ dependencies:
     git:
       url: https://github.com/tekartik/mustache.dart
       path: mustache
-      ref: dart3a
     version: '>=0.2.1'
   tekartik_mustache_fs:
     git:
       url: https://github.com/tekartik/mustache.dart
       path: mustache_fs
-      ref: dart3a
     version: '>=0.2.1'
   args: ">=2.6.0"
   pub_semver: ">=2.1.4"
@@ -27,8 +25,3 @@ dev_dependencies:
   test: ">=1.24.0"
   process_run: ">=1.2.1+1"
 
-dependency_overrides:
-  tekartik_mustache:
-    path: ../mustache
-  tekartik_mustache_fs:
-    path: ../mustache_fs
