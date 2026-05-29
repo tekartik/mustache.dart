@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:tekartik_mustache/mustache_sync.dart';
 
 Future<void> main() async {
@@ -26,5 +28,5 @@ Future<void> main() async {
       return parts[name];
     },
   );
-  print(text);
+  stdout.writeln(text);
 }

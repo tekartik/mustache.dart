@@ -24,8 +24,8 @@ Future mustacheMain(List<String> arguments) async {
   var result = parser.parse(arguments);
 
   void printUsage() {
-    print('mustache_cli <yaml_or_json> <template>');
-    print(parser.usage);
+    stdout.writeln('mustache_cli <yaml_or_json> <template>');
+    stdout.writeln(parser.usage);
     exit(0);
   }
 
@@ -33,7 +33,7 @@ Future mustacheMain(List<String> arguments) async {
     printUsage();
   }
   if (result[versionFlag] == true) {
-    print('version $version');
+    stdout.writeln('version $version');
     exit(0);
   }
 
@@ -84,6 +84,7 @@ Future mustacheMain(List<String> arguments) async {
 
   if (data is! Map) {
     stderr.writeln('source data is not a map');
+    // ignore: only_throw_errors
     throw exception ?? StateError('source data not a map');
   }
 
@@ -96,7 +97,7 @@ Future mustacheMain(List<String> arguments) async {
     if (outFilePath != null) {
       await fs.file(outFilePath).writeAsString(mustacheResult);
     } else {
-      print(mustacheResult);
+      stdout.writeln(mustacheResult);
     }
   } else {
     stderr.writeln(
