@@ -84,6 +84,18 @@ void main() {
         expect(scanner.delimiter!.close, ']');
         expect(scanner.delimiter!.isDefault, false);
       });
+      test('new_delimiter_padding', () async {
+        for (var source in [
+          '{{= [   ] =}}',
+          '{{=  [ ]=}}',
+          '{{=\t[ \t]\t=}}',
+        ]) {
+          var scanner = Scanner(source);
+          scanner.scan();
+          expect(scanner.delimiter!.open, '[', reason: source);
+          expect(scanner.delimiter!.close, ']', reason: source);
+        }
+      });
       test('new_delimiter_node', () async {
         expect(scan('{{=[ ]=}}[nodex]'), [mn('=[ ]='), mn('nodex')]);
       });

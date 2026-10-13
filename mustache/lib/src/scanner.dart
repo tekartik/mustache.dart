@@ -197,12 +197,8 @@ class Scanner extends Object with SourceMixin {
       var index = start + 1;
 
       void skipWhitespaces() {
-        while (true) {
-          var chr = getChar(index);
-          if (isInlineWhitespace(chr)) {
-            index++;
-          }
-          break;
+        while (index < end && isInlineWhitespace(getChar(index))) {
+          index++;
         }
       }
 

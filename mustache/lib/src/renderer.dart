@@ -58,33 +58,45 @@ class Renderer {
     sb.write(text);
   }
 
-  Object? getRawVariableValue(VariableNode variable, {bool recursive = true}) {
+  /// The renderer holding [variable] (this one or a parent) and its raw
+  /// value, null if not found.
+  (Renderer, Object?)? _lookup(VariableNode variable, {bool recursive = true}) {
     var key = variable.name;
 
     // Non dotted?
     if (_hasRawKey(key)) {
-      return _getRawKeyValue(key);
+      return (this, _getRawKeyValue(key));
     }
 
     var parts = key!.split('.');
     if (parts.length > 1) {
       if (_hasDottedKey(parts)) {
-        return _getDottedKeyValue(parts);
+        return (this, _getDottedKeyValue(parts));
       }
 
-      // If it contains the first part resolve
-
+      // If it contains the first part resolve (to null, no fix)
       if (_hasRawKey(parts[0])) {
-        return _getDottedKeyValue(parts);
+        return (this, null);
       }
     }
 
     if (recursive) {
-      return parent?.getRawVariableValue(variable, recursive: recursive);
+      return parent?._lookup(variable, recursive: recursive);
     }
 
     return null;
   }
+
+  Object? getRawVariableValue(VariableNode variable, {bool recursive = true}) =>
+      _lookup(variable, recursive: recursive)?.$2;
+
+  /// Renders a lambda result in the context of the renderer holding the
+  /// lambda (its values and parents).
+  Renderer _lambdaResultRenderer() => Renderer()
+    ..values = values
+    ..parent = parent
+    ..partial = partial
+    ..partialContext = partialContext;
 
   Future fixValue(VariableNode? node, String? key, dynamic value) async {
     if (value is String) {
@@ -100,9 +112,7 @@ class Renderer {
       if (result is bool) {
         throw UnsupportedError('TODO');
       } else if (result is String) {
-        var renderer = Renderer()
-          ..values = values
-          ..partial = partial;
+        var renderer = _lambdaResultRenderer();
         result = await renderer.render(result);
         // escape
         result = await fixValue(node, key, result) as String?;
@@ -129,9 +139,7 @@ class Renderer {
       } else if (result is Future) {
         throw UnsupportedError('Future not supported');
       } else if (result is String) {
-        var renderer = Renderer()
-          ..values = values
-          ..partial = partial;
+        var renderer = _lambdaResultRenderer();
         result = renderer.renderSync(result);
         // escape
         result = fixValueSync(node, key, result) as String?;
@@ -142,73 +150,26 @@ class Renderer {
     }
   }
 
+  /// The value fixed (escaped, lambda called) by the renderer holding it.
   Future getVariableValue(
     VariableNode variable, {
     bool recursive = true,
   }) async {
-    var node = variable;
-    var key = variable.name;
-
-    Object? varFixValue(Object? value) {
-      return fixValue(node, key, value);
+    var found = _lookup(variable, recursive: recursive);
+    if (found == null) {
+      return null;
     }
-
-    // Non dotted?
-    if (_hasRawKey(key)) {
-      return varFixValue(_getRawKeyValue(key));
-    }
-
-    var parts = key!.split('.');
-    if (parts.length > 1) {
-      if (_hasDottedKey(parts)) {
-        return varFixValue(_getDottedKeyValue(parts));
-      }
-
-      // If it contains the first part resolve
-
-      if (_hasRawKey(parts[0])) {
-        return _getDottedKeyValue(parts);
-      }
-    }
-
-    if (recursive) {
-      return await parent?.getVariableValue(variable, recursive: recursive);
-    }
-
-    return null;
+    var (renderer, value) = found;
+    return await renderer.fixValue(variable, variable.name, value);
   }
 
   Object? getVariableValueSync(VariableNode variable, {bool recursive = true}) {
-    var node = variable;
-    var key = variable.name;
-
-    Object? varFixValue(Object? value) {
-      return fixValueSync(node, key, value);
+    var found = _lookup(variable, recursive: recursive);
+    if (found == null) {
+      return null;
     }
-
-    // Non dotted?
-    if (_hasRawKey(key)) {
-      return varFixValue(_getRawKeyValue(key));
-    }
-
-    var parts = key!.split('.');
-    if (parts.length > 1) {
-      if (_hasDottedKey(parts)) {
-        return varFixValue(_getDottedKeyValue(parts));
-      }
-
-      // If it contains the first part resolve
-
-      if (_hasRawKey(parts[0])) {
-        return _getDottedKeyValue(parts);
-      }
-    }
-
-    if (recursive) {
-      return parent?.getVariableValueSync(variable, recursive: recursive);
-    }
-
-    return null;
+    var (renderer, value) = found;
+    return renderer.fixValueSync(variable, variable.name, value);
   }
 
   bool _hasRawKey(String? key) {
@@ -335,120 +296,122 @@ class Renderer {
     return sb.toString();
   }
 
-  Future<void> _renderPartialNode(PartialNode node) async {
-    // find current indentation
+  /// The indentation of a standalone partial tag (null if none).
+  String? _partialIndent() {
     var previousNode = this.previousNode;
-    String? indent;
     if (previousNode is TextNode) {
       var text = previousNode.text!;
       if (isInlineWhitespaces(text)) {
         // Ensure previous one was ending a line
         if (nodeNullOrHasLineFeed(getNodeAtOffset(-2))) {
-          indent = text;
+          return text;
         }
       }
     }
+    return null;
+  }
+
+  /// Reindent the partial [template], keeping whether it has a last line.
+  static String _reindent(String template, String? indent) {
+    final endsWithLineFeed = hasLineFeed(template);
+    var sb = StringBuffer();
+    var lines = LineSplitter.split(template).toList();
+
+    // First line don't indent
+    sb.write(lines.first);
+
+    void doIndent() {
+      if (indent != null) {
+        sb.write(indent);
+      }
+    }
+
+    // Next indent
+    if (lines.length > 1) {
+      // finish first
+      sb.writeln();
+      for (var i = 1; i < lines.length - 1; i++) {
+        doIndent();
+        sb.writeln(lines[i]);
+      }
+      doIndent();
+      sb.write(lines.last);
+    }
+
+    // last re-add line feed or not
+    if (endsWithLineFeed) {
+      sb.writeln();
+    }
+    return sb.toString();
+  }
+
+  Future<void> _renderPartialNode(PartialNode node) async {
+    var indent = _partialIndent();
     var partialContext = RendererPartialContext(this.partialContext);
     var nodeText = node.text;
     if (nodeText != null) {
-      var template = await partial!(nodeText, partialContext);
+      var template = await partial?.call(nodeText, partialContext);
 
       if (template != null) {
-        final endsWithLineFeed = hasLineFeed(template);
-        // reindent the template
-        // Keeping whether it has a last line
-        var sb = StringBuffer();
-        var lines = LineSplitter.split(template).toList();
-
-        // First line don't indent
-        sb.write(lines.first);
-
-        void doIndent() {
-          if (indent != null) {
-            sb.write(indent);
-          }
-        }
-
-        // Next indent
-        if (lines.length > 1) {
-          // finish first
-          sb.writeln();
-          for (var i = 1; i < lines.length - 1; i++) {
-            doIndent();
-            sb.writeln(lines[i]);
-          }
-          doIndent();
-          sb.write(lines.last);
-        }
-
-        // last re-add line feed or not
-        if (endsWithLineFeed) {
-          sb.writeln();
-        }
-        template = sb.toString();
-
-        var nodes = parse(template)!;
+        var nodes = parse(_reindent(template, indent))!;
         await renderChildNodes(nodes, {}, partialContext: partialContext);
       }
     }
   }
 
   void _renderPartialNodeSync(PartialNode node) {
-    // find current indentation
-    var previousNode = this.previousNode;
-    String? indent;
-    if (previousNode is TextNode) {
-      var text = previousNode.text!;
-      if (isInlineWhitespaces(text)) {
-        // Ensure previous one was ending a line
-        if (nodeNullOrHasLineFeed(getNodeAtOffset(-2))) {
-          indent = text;
-        }
-      }
-    }
-
+    var indent = _partialIndent();
     var nodeText = node.text;
     if (nodeText != null) {
       var template = callPartialSync(nodeText);
 
       if (template != null) {
-        final endsWithLineFeed = hasLineFeed(template);
-        // reindent the template
-        // Keeping whether it has a last line
-        var sb = StringBuffer();
-        var lines = LineSplitter.split(template).toList();
-
-        // First line don't indent
-        sb.write(lines.first);
-
-        void doIndent() {
-          if (indent != null) {
-            sb.write(indent);
-          }
-        }
-
-        // Next indent
-        if (lines.length > 1) {
-          // finish first
-          sb.writeln();
-          for (var i = 1; i < lines.length - 1; i++) {
-            doIndent();
-            sb.writeln(lines[i]);
-          }
-          doIndent();
-          sb.write(lines.last);
-        }
-
-        // last re-add line feed or not
-        if (endsWithLineFeed) {
-          sb.writeln();
-        }
-        template = sb.toString();
-
-        var nodes = parse(template)!;
+        var nodes = parse(_reindent(template, indent))!;
         renderChildNodesSync(nodes, {}, partialContext: partialContext);
       }
     }
+  }
+
+  /// The source text of a section lambda (the section content as is).
+  String _sectionLambdaText(SectionNode node) {
+    final keyStart = node.startNode!.sourceContent.end!;
+    final keyEnd = node.endNode.sourceContent.start;
+    return sourceGetText(
+      node.startNode!.sourceContent.source!,
+      keyStart,
+      keyEnd,
+    );
+  }
+
+  /// Parse a section lambda [result] with the section delimiters.
+  List<ParserNode?> _sectionLambdaNodes(SectionNode node, String result) {
+    var scanner = Scanner(result)..delimiter = node.startNode!.delimiter;
+    scanner.scan();
+    return parseScannerNodes(scanner.nodes)!;
+  }
+
+  /// The values to render the section children with, once per item (none
+  /// when the section is skipped).
+  static List<Map<String, dynamic>> _sectionValues(
+    SectionNode node,
+    Object? value,
+  ) {
+    if (node.inverted == true) {
+      return _isFalsySectionValue(value) ? [{}] : [];
+    }
+    if (_isFalsySectionValue(value)) {
+      return [];
+    } else if (isPositiveValue(value)) {
+      return [{}];
+    } else if (value is Map) {
+      return [value.cast<String, dynamic>()];
+    } else if (value is List) {
+      return [
+        for (var item in value)
+          if (item is! Map) {'.': item} else item.cast<String, dynamic>(),
+      ];
+    }
+    throw UnsupportedError('value $value (${value.runtimeType}) node $node');
   }
 
   Future _renderNodes(List<ParserNode?> nodes) async {
@@ -462,64 +425,20 @@ class Renderer {
 
       if (node is SectionNode) {
         var value = getRawVariableValue(node.variable!);
-        var key = node.key;
 
         if (value is Function) {
-          // section lambda
-          // get the inner content as is
-          final keyStart = node.startNode!.sourceContent.end!;
-          final keyEnd = node.endNode.sourceContent.start;
-          key = sourceGetText(
-            node.startNode!.sourceContent.source!,
-            keyStart,
-            keyEnd,
-          );
-
-          // call the function
+          // section lambda, call it with the inner content as is
           // ignore: avoid_dynamic_calls
-          var result = await value(key);
+          var result = await value(_sectionLambdaText(node));
 
           if (result is String) {
-            // parse it
-            var scanner = Scanner(result)
-              ..delimiter = node.startNode!.delimiter;
-            scanner.scan();
-
-            var parserNodes = parseScannerNodes(scanner.nodes)!;
-            await renderChildNodes(parserNodes, values);
+            await renderChildNodes(_sectionLambdaNodes(node, result), values);
           }
           continue;
-        } else {
-          value = await fixValue(node.variable, node.key, value);
         }
-
-        if (node.inverted == true) {
-          if ((value == null || value == false) ||
-              (value is List && value.isEmpty)) {
-            await renderChildNodes(node.nodes, {});
-          }
-        } else {
-          if (value == null || value == false) {
-            // ignore
-          } else if (isPositiveValue(value)) {
-            await renderChildNodes(node.nodes, {});
-          } else if (value is Map) {
-            await renderChildNodes(node.nodes, value.cast<String, dynamic>());
-          } else if (value is List) {
-            for (var item in value) {
-              Map<String, dynamic> values;
-              if (item is! Map) {
-                values = {'.': item};
-              } else {
-                values = item.cast<String, dynamic>();
-              }
-              await renderChildNodes(node.nodes, values);
-            }
-          } else {
-            throw UnsupportedError(
-              'value $value (${value.runtimeType}) node $node',
-            );
-          }
+        value = await fixValue(node.variable, node.key, value);
+        for (var itemValues in _sectionValues(node, value)) {
+          await renderChildNodes(node.nodes, itemValues);
         }
       } else if (node is PartialNode) {
         await _renderPartialNode(node);
@@ -544,64 +463,20 @@ class Renderer {
 
       if (node is SectionNode) {
         var value = getRawVariableValue(node.variable!);
-        var key = node.key;
 
         if (value is Function) {
-          // section lambda
-          // get the inner content as is
-          final keyStart = node.startNode!.sourceContent.end!;
-          final keyEnd = node.endNode.sourceContent.start;
-          key = sourceGetText(
-            node.startNode!.sourceContent.source!,
-            keyStart,
-            keyEnd,
-          );
-
-          // call the function
+          // section lambda, call it with the inner content as is
           // ignore: avoid_dynamic_calls
-          var result = value(key);
+          var result = value(_sectionLambdaText(node));
 
           if (result is String) {
-            // parse it
-            var scanner = Scanner(result)
-              ..delimiter = node.startNode!.delimiter;
-            scanner.scan();
-
-            var parserNodes = parseScannerNodes(scanner.nodes)!;
-            renderChildNodesSync(parserNodes, values);
+            renderChildNodesSync(_sectionLambdaNodes(node, result), values);
           }
           continue;
-        } else {
-          value = fixValueSync(node.variable, node.key, value);
         }
-
-        if (node.inverted == true) {
-          if ((value == null || value == false) ||
-              (value is List && value.isEmpty)) {
-            renderChildNodesSync(node.nodes, {});
-          }
-        } else {
-          if (value == null || value == false) {
-            // ignore
-          } else if (isPositiveValue(value)) {
-            renderChildNodesSync(node.nodes, {});
-          } else if (value is Map) {
-            renderChildNodesSync(node.nodes, value.cast<String, dynamic>());
-          } else if (value is List) {
-            for (var item in value) {
-              Map<String, dynamic> values;
-              if (item is! Map) {
-                values = {'.': item};
-              } else {
-                values = item.cast<String, dynamic>();
-              }
-              renderChildNodesSync(node.nodes, values);
-            }
-          } else {
-            throw UnsupportedError(
-              'value $value (${value.runtimeType}) node $node',
-            );
-          }
+        value = fixValueSync(node.variable, node.key, value);
+        for (var itemValues in _sectionValues(node, value)) {
+          renderChildNodesSync(node.nodes, itemValues);
         }
       } else if (node is PartialNode) {
         _renderPartialNodeSync(node);
@@ -627,6 +502,13 @@ class Renderer {
     return renderNodesSync(nodes);
   }
 }
+
+/// null, false, an empty list, an empty string or 0.
+bool _isFalsySectionValue(Object? value) =>
+    value == null ||
+    value == false ||
+    (value is List && value.isEmpty) ||
+    ((value is String || value is num) && !isPositiveValue(value));
 
 bool nodeNullOrHasLineFeed(Node? node) =>
     node == null || node is TextNode && (hasLineFeed(node.text!));

@@ -237,27 +237,6 @@ void main() {
         '  >\n  >>',
       );
     });
-    test('partial_no_previous_line', () async {
-      // from spec
-      // Standalone tags should not require a newline to precede them.
-      expect(
-        await render(
-          '  {{>p}}\n>',
-          null,
-          partial: (String? source, map) => '>\n>',
-        ),
-        '  >\n  >>',
-      );
-    });
-    test('partial_data_before', () async {
-      // from spec
-      // Whitespace should be left untouched.
-      expect(
-        await render('| {{>p}}\n', null, partial: (String? _, map) => '>\n>'),
-        '| >\n>\n',
-      );
-    });
-
     test('partial_data_before', () async {
       // from spec
       // Whitespace should be left untouched.
@@ -376,6 +355,42 @@ void main() {
   });
 
   group('delimiters', () {
-    test('simple_delimiter', () {});
+    test('simple_delimiter', () async {
+      expect(await render('{{=| |=}}|a| {{a}}', {'a': 1}), '1 {{a}}');
+    });
+    test('padding', () async {
+      // Several spaces around the delimiters used to stop the parsing.
+      expect(await render('|{{= @   @ =}}@x@|', {'x': 1}), '|1|');
+      expect(await render('|{{=  @ @=}}@x@|', {'x': 1}), '|1|');
+    });
+  });
+
+  group('regressions', () {
+    test('partial without resolver', () async {
+      // Used to fail on a null check (the spec renders nothing).
+      expect(await render('a{{>p}}b', {}), 'ab');
+    });
+    test('empty string and 0 sections', () async {
+      for (var value in <Object?>['', 0, 0.0]) {
+        // Used to throw an UnsupportedError
+        expect(await render('[{{#a}}x{{/a}}]', {'a': value}), '[]');
+        // Used to render nothing
+        expect(await render('[{{^a}}x{{/a}}]', {'a': value}), '[x]');
+      }
+      for (var value in <Object?>['y', 1, -1]) {
+        expect(await render('[{{#a}}x{{/a}}]', {'a': value}), '[x]');
+        expect(await render('[{{^a}}x{{/a}}]', {'a': value}), '[]');
+      }
+    });
+    test('lambda result in a nested context', () async {
+      // Used to render '' (the lambda result had no parent context)
+      expect(
+        await render('{{#sub}}{{lambda}}{{/sub}}', {
+          'planet': 'world',
+          'sub': {'lambda': (Object? _) => '{{planet}}'},
+        }),
+        'world',
+      );
+    });
   });
 }

@@ -37,13 +37,9 @@ void _defineGroupFromFile(String filename, String text) {
   var tests = json['tests'] as List;
   filename = filename.substring(filename.lastIndexOf('/') + 1);
   group('Specs of $filename', () {
-    //Make sure that we reset the state of the Interpolation - Multiple Calls test
-    //as for some reason dart can run the group more than once causing the test
-    //to fail the second time it runs
-    tearDown(() {
-      final callable =
-          lambdas['Interpolation - Multiple Calls'] as _DummyCallableWithState;
-      callable.reset();
+    // Reset the state of the 'Interpolation - Multiple Calls' lambda.
+    setUp(() {
+      _multipleCallsCounter = 0;
     });
 
     for (var localTest in tests) {
@@ -88,6 +84,17 @@ void _defineGroupFromFile(String filename, String text) {
           reason: reason.toString(),
         );
       });
+      test('sync $testDescription', () {
+        expect(
+          mustacheRenderSync(
+            template,
+            data,
+            lambda: (name) => partials?[name] as String?,
+          ),
+          expected,
+          reason: reason.toString(),
+        );
+      });
     }
   }, skip: skipAll);
 }
@@ -109,29 +116,20 @@ bool shouldRun(String filename) {
 
 //Until we'll find a way to load a piece of code dynamically,
 //we provide the lambdas at the test here
-class _DummyCallableWithState {
-  var _callCounter = 0;
 
-  String call(Object? arg) => '${++_callCounter}';
+/// Calls counter of the 'Interpolation - Multiple Calls' lambda, a closure
+/// (a callable object is not a Function for the renderer).
+var _multipleCallsCounter = 0;
 
-  void reset() => _callCounter = 0;
-}
-
-typedef Lambda = Object? Function(String src);
-
-var lambdasFunctions = <String, Function>{
+var lambdas = <String, Function>{
   'Interpolation': (t) => 'world',
   'Interpolation - Expansion': (t) => '{{planet}}',
   'Interpolation - Alternate Delimiters': (t) => '|planet| => {{planet}}',
-  //function() { return (g=(function(){return this})()).calls=(g.calls||0)+1 }
+  'Interpolation - Multiple Calls': (t) => '${++_multipleCallsCounter}',
   'Escaping': (t) => '>',
   'Section': (txt) => txt == '{{x}}' ? 'yes' : 'no',
   'Section - Expansion': (txt) => '$txt{{planet}}$txt',
   'Section - Alternate Delimiters': (txt) => '$txt{{planet}} => |planet|$txt',
   'Section - Multiple Calls': (t) => '__${t}__',
   'Inverted Section': (txt) => false,
-};
-var lambdas = <String, Object>{
-  'Interpolation - Multiple Calls': _DummyCallableWithState(),
-  ...lambdasFunctions,
 };

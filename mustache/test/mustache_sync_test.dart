@@ -23,4 +23,33 @@ void main() {
       );
     });
   });
+
+  group('regressions', () {
+    test('empty string and 0 sections', () {
+      for (var value in <Object?>['', 0, 0.0]) {
+        // Used to throw an UnsupportedError
+        expect(render('[{{#a}}x{{/a}}]', {'a': value}), '[]');
+        // Used to render nothing
+        expect(render('[{{^a}}x{{/a}}]', {'a': value}), '[x]');
+      }
+      for (var value in <Object?>['y', 1, -1]) {
+        expect(render('[{{#a}}x{{/a}}]', {'a': value}), '[x]');
+        expect(render('[{{^a}}x{{/a}}]', {'a': value}), '[]');
+      }
+    });
+    test('lambda result in a nested context', () {
+      // Used to render ''
+      expect(
+        render('{{#sub}}{{lambda}}{{/sub}}', {
+          'planet': 'world',
+          'sub': {'lambda': (Object? _) => '{{planet}}'},
+        }),
+        'world',
+      );
+    });
+    test('delimiters padding', () {
+      expect(render('|{{= @   @ =}}@x@|', {'x': 1}), '|1|');
+      expect(render('|{{=  @ @=}}@x@|', {'x': 1}), '|1|');
+    });
+  });
 }
