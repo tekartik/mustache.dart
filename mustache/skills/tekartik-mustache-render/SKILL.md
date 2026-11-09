@@ -61,26 +61,34 @@ partial resolver and the lambdas may be asynchronous.
 * A value that is a `Function` is a lambda called with a `String` argument:
   for `{{f}}` it receives the key (`'f'`), for `{{#f}}inner{{/f}}` it receives
   the raw inner source (`'inner'`, `'{{x}}'` unexpanded). Its `String` result is
-  itself rendered as a template with the same values, then escaped like a
-  variable, so `{{f}}` escapes the lambda result twice; use `{{{f}}}` when the
-  lambda already produces html. In async rendering the lambda may return a
+  itself rendered as a template with the same values (its variables are
+  escaped), then `{{f}}` escapes the whole result once more: the html of the
+  lambda is escaped and its variables are escaped twice; use `{{{f}}}` when
+  the lambda produces html. In async rendering the lambda may return a
   `Future<String>`; in sync rendering a `Future` or a `bool` result throws
   `UnsupportedError`.
-* Sections: `{{#s}}` renders once for a truthy map/object, once per element for
-  a `List` (with the element as the current context, `{{.}}` being the element
-  itself), and not at all for `false`, `null`, a missing key or an empty list.
-  `{{^s}}` is the inverted section. Dotted names (`{{var.sub}}`,
-  `{{#a}}{{b.c}}{{/a}}`) resolve inside the current context only, without
-  falling back to the parent for the first segment.
+* Sections: `{{#s}}` renders once for a map (its keys become the current
+  context) or another truthy value (`true`, a non empty string, a non zero
+  number), once per element for a `List` (with the element as the current
+  context, `{{.}}` being the element itself), and not at all for `false`,
+  `null`, a missing key, an empty list, `''` or `0`. Any other value (a
+  `Set`, a `DateTime`, an object) throws `UnsupportedError`: pass maps and
+  lists. Inside a section of a scalar value, `{{.}}` is not that value (it
+  resolves in the parent context). `{{^s}}` is the inverted section; a
+  lambda is truthy, so `{{^lambda}}` never renders. Dotted names
+  (`{{var.sub}}`, `{{#a}}{{b.c}}{{/a}}`): the first segment is looked up
+  in the current context then in the parents, the next ones only inside
+  the value found (a broken chain renders empty).
 * Also supported: `{{!comment}}`, standalone-line trimming (a line holding only
   a section, partial or comment tag disappears), and delimiter changes
   `{{=<% %>=}}` (triple `{{{ }}}` no-escape only works with the default
   delimiters).
-* Testing: the package runs the official Mustache spec (`test/spec/*.json`)
+* Testing: the package runs the official Mustache spec (`test/spec/*.yml`)
   through `test/run_spec.dart`; `supported_spec_test.dart` lists the spec files
   that pass today (interpolation, sections, inverted, comments, partials,
-  delimiters, lambdas). Expect the odd whitespace/indentation difference from
-  other implementations: a partial's own indentation is not re-indented.
+  delimiters, lambdas), with the async and the sync renderer. A standalone
+  partial is re-indented line by line; an empty partial renders nothing
+  (an indented standalone one leaves its indentation).
 * Anti-patterns: importing `mustache.dart` and `mustache_sync.dart` together;
   `await`ing the sync `render`; expecting `{{>name}}` to work without a
   `partial` (async) or `lambda` (sync) callback; passing a template object -

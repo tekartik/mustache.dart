@@ -313,6 +313,10 @@ class Renderer {
 
   /// Reindent the partial [template], keeping whether it has a last line.
   static String _reindent(String template, String? indent) {
+    // An empty partial has no line.
+    if (template.isEmpty) {
+      return template;
+    }
     final endsWithLineFeed = hasLineFeed(template);
     var sb = StringBuffer();
     var lines = LineSplitter.split(template).toList();
@@ -427,6 +431,10 @@ class Renderer {
         var value = getRawVariableValue(node.variable!);
 
         if (value is Function) {
+          // A lambda is truthy: an inverted section is skipped.
+          if (node.inverted == true) {
+            continue;
+          }
           // section lambda, call it with the inner content as is
           // ignore: avoid_dynamic_calls
           var result = await value(_sectionLambdaText(node));
@@ -465,6 +473,10 @@ class Renderer {
         var value = getRawVariableValue(node.variable!);
 
         if (value is Function) {
+          // A lambda is truthy: an inverted section is skipped.
+          if (node.inverted == true) {
+            continue;
+          }
           // section lambda, call it with the inner content as is
           // ignore: avoid_dynamic_calls
           var result = value(_sectionLambdaText(node));
