@@ -41,7 +41,8 @@ to a file.
 * Arguments: `mustache_cli <yaml_or_json> <template>` - **data file first,
   template second**. Options: `-o, --out <file>` (write there instead of
   stdout), `-h, --help`, `-v, --version`. Anything but exactly two positional
-  arguments prints the usage and exits.
+  arguments prints the usage on stderr and exits with code 64 (usage error;
+  `--help` and `--version` exit 0).
 * The data file extension picks the parser (`.json` json, `.yaml` / `.yml`
   yaml); if it fails or the extension is something else, the other format is
   tried too, so an extensionless file still works. The decoded document must be
@@ -55,9 +56,9 @@ to a file.
 * Without `--out` the result is printed with `stdout.writeln`, adding a
   trailing newline; with `--out` it is written verbatim with `writeAsString`
   (the parent directory must already exist).
-* `mustacheMain` calls `exit()` for `--help`, `--version` and when rendering
-  returns null (exit code 1): never call it from a server or a test you expect
-  to survive. In that case call `renderFile(fileSystemIo, template, values:
+* `mustacheMain` calls `exit()` for `--help`, `--version`, a usage error and
+  when rendering returns null (exit code 1): never call it from a server or a
+  test you expect to survive. In that case call `renderFile(fileSystemIo, template, values:
   ...)` from `tekartik_mustache_fs` directly.
 * Anti-patterns: passing the template before the data file; expecting a
   `--values` style option (there is none, only a data file); expecting the
